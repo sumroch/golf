@@ -53,10 +53,13 @@ class TournamentRoundActionController extends Controller
         $tournament = TournamentRound::findOrFail($round);
 
         if ($tournament->status !== 'active') {
-            return redirect()->back()->withErrors(['Error' => 'Cannot pause tournament round that is not active.']);
+            return redirect()->back()->withErrors(['Error' => 'Cannot pause !, this tournament round is not active.']);
         }
 
-        $tournament->update(['status' => 'pause']);
+        $tournament->update([
+            'status' => 'pause',
+            'action_date' => now(),
+        ]);
 
         return redirect()->back();
     }
@@ -68,13 +71,11 @@ class TournamentRoundActionController extends Controller
     {
         $tournament = TournamentRound::findOrFail($round);
 
-        // dd(Carbon::parse($request->date, $tournament->timezone ?? 'Asia/Jakarta')->format('Y-m-d H:i:s'));
-
         if ($tournament->status !== 'pause') {
             return redirect()->back()->withErrors(['Error' => 'Cannot resume tournament round that is not paused.']);
         }
 
-        $paceActionService->regeneratePace($tournament);
+        $paceActionService->regeneratePace($tournament, $request->date);
 
         $tournament->update(['status' => 'active', 'date' => $request->date]);
 

@@ -56,9 +56,6 @@
                     <div class="w-full flex items-center justify-between">
                         <p class="text-xl font-bold">PACE OF PLAY - {{ strtoupper($session) }}</p>
                         <div class="flex items-center">
-                            <button class="bg-green-700 rounded-lg text-white me-5 px-4 py-2 text-sm cursor-pointer">
-                                Edit Table
-                            </button>
                             <a class="bg-white rounded-lg shadow px-4 py-2 border border-gray-300 text-sm cursor-pointer" href="{{ route('round.pace-print', $round->id) }}" target="_blank">Print</a>
                         </div>
                     </div>
@@ -77,7 +74,7 @@
                                         </tr>
                                         <tr>
                                             <th class="bg-white">Group</th>
-                                            <th class="bg-white">START TEE 1</th>
+                                            <th class="bg-white">START TEE {{ $teeIndex }}</th>
                                             <th class="bg-white">Start</th>
                                             @foreach ($teeIndex == 1 ? $tee_one : $tee_ten as $hole)
                                                 <th class="bg-white">{{ $hole->number }}</th>

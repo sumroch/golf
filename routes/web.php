@@ -53,6 +53,8 @@ Route::middleware(['auth', 'role:admin|technician|director'])->prefix('admin')->
         Route::post('/group/{round}', [TournamentRoundGroupController::class, 'storeGroup'])->name('round.group.store');
         Route::post('/referee/{round}', [TournamentRoundController::class, 'storeReferee'])->name('round.referee.store');
 
+        Route::put('/group/{round}/setting', [TournamentRoundGroupController::class, 'updateHole'])->name('round.group.setting');
+
         Route::delete('/group/{round}', [TournamentRoundGroupController::class, 'deleteGroup'])->name('round.group.delete');
     });
 

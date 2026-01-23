@@ -2,55 +2,42 @@
 
 namespace App\Http\Services;
 
-use App\Models\TournamentHole;
+use App\Models\TournamentPace;
 use App\Models\TournamentRound;
 use Carbon\Carbon;
 
 class PaceActionService
 {
-    public function regeneratePace(TournamentRound $tournamentRound): void
+    /**
+     * Regenerate pace times when tournament is resumed.
+     * 
+     * @param TournamentRound $tournamentRound
+     * @param string $newStartDateTime - The new resume datetime from user input
+     */
+    public function regeneratePace(TournamentRound $tournamentRound, string $newStartDateTime): void
     {
-        $holes = $tournamentRound
-            ->tournamentHoles()
-            ->with(['tournamentPaces' => function ($query) {
-                $query->where('status', '!=', 'finish')
-                    ->orderBy('time', 'asc');
-            }])
-            ->orderBy('number', 'asc')->get();
+        $timezone = $tournamentRound->timezone ?? 'Asia/Jakarta';
+        $pausedAt = Carbon::parse($tournamentRound->action_date, 'UTC')->setTimezone($timezone);
+        $firstPace = Carbon::parse($pausedAt->copy()->format('Y-m-d') . ' ' . $tournamentRound->tournamentPace()->whereNotIn('status', ['unmonitored', 'finish'])->orderBy('time', 'asc')->first()->time);
 
-        dd($holes);
+        $resumeAt = Carbon::parse($newStartDateTime);
 
-        $orderHoles = $holes;
+        // Calculate time difference (pause duration)
+        $pauseDuration = $firstPace->diffInSeconds($resumeAt, false);
 
-        foreach ($holes as $group) {
-
-            $previousTime = $group->time;
-
-            if ((int) $group->tee !== 1) {
-                $orderHoles = $this->orderHoles($holes, (int) $group->tee);
-            } else {
-                $orderHoles = $holes;
-            }
-
-            foreach ($orderHoles as $hole) {
-                $start = Carbon::parse($previousTime);
-                $allow = Carbon::parse($hole->allowed_time);
-
-                $actual = $start->addHour($allow->hour)->addMinute($allow->minute)->format('H:i:s');
-
-                $group->tournamentPaces()->create([
-                    'hole_id' => $hole->id,
-                    'time' => $actual,
-                    'type' => 'tee',
-                    'tournament_round_id' => $tournamentRound->id,
-                ]);
-
-                $previousTime = $actual;
-            }
+        foreach ($tournamentRound->tournamentPace()->whereNotIn('status', ['unmonitored', 'finish'])->get() as $paces) {
+            $paces->update([
+                'time' => Carbon::parse($paces->time)
+                    ->addSeconds((int) $pauseDuration)
+                    ->format('H:i:s'),
+            ]);
         }
     }
 
-    protected function orderHoles($holes, $start = 1)
+    /**
+     * Order holes starting from a specific hole number (for crossover handling).
+     */
+    protected function orderHoles($holes, $start = 1): array
     {
         $bigger = [];
         $lower = [];
@@ -64,26 +51,5 @@ class PaceActionService
         }
 
         return array_merge($bigger, $lower);
-    }
-
-    protected function generateHoles($holes, $round)
-    {
-        if (TournamentHole::where('tournament_round_id', $round)->count() == 0) {
-            $cloneHoles = [];
-
-            foreach ($holes as $hole) {
-                $cloneHoles[] = [
-                    'tournament_round_id' => $round,
-                    'number' => $hole->number,
-                    'allowed_time' => $hole->allowed_time,
-                    'par' => $hole->par,
-                    'course_id' => $hole->course_id,
-                    'updated_at' => $hole->updated_at,
-                    'created_at' => $hole->created_at,
-                ];
-            }
-
-            TournamentHole::insert($cloneHoles);
-        }
     }
 }

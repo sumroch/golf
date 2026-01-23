@@ -28,7 +28,7 @@ class ResumeRequest extends FormRequest
 
         return [
             "date"  => [
-                Rule::date()->afterOrEqual(Carbon::createFromFormat('Y-m-d H:i:s', $tournament->date . ' ' . Carbon::now()->timezone($tournament->timezone ?? 'Asia/Jakarta')->format(' H:i:s'))),
+                Rule::date()->afterOrEqual(Carbon::createFromFormat('Y-m-d H:i:s', $tournament->action_date, "UTC")->timezone($tournament->timezone ?? 'Asia/Jakarta')->format('Y-m-d H:i:s')),
             ],
             "start_date"  => 'required|date',
             "start_hour"  => 'required|numeric|min:0|max:23',

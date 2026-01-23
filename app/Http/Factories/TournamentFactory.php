@@ -83,6 +83,7 @@ class TournamentFactory
             : $datas->groups->when($session !== null, fn($query) => $query->where('session', $session))
             ->map(function($group) {
                 $group->time = Carbon::parse($group->time)->format('H:i');
+                $group->total_player = $group->players->count();
                 return $group;
             })
             ->groupBy('session')

@@ -27,7 +27,7 @@ class TournamentRoundController extends Controller
             ->first();
 
         $tournamentByHole = $paceService->getPacesByHoles($round, $request->input('session', 'morning'));
-        $tournamentByTee = $paceService->getPacesByTee($round, $request->input('tee', 1));
+        $tournamentByTee = $paceService->getPacesByTee($round, $request->input('tee'));
 
         return view('admin.dashboard', [
             'round' => TournamentFactory::dashboard($tournamentRound),

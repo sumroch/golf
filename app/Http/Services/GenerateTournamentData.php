@@ -12,7 +12,9 @@ class GenerateTournamentData
     {
         $course = $tournamentRound->tournament->course;
 
-        $this->generateHoles($course->holes()->orderBy('number')->get(), $tournamentRound->id);
+        if ($tournamentRound->tournamentHoles()->count() == 0) {
+            $this->generateHoles($course->holes()->orderBy('number')->get(), $tournamentRound->id);
+        }
 
         $holes = $tournamentRound->tournamentHoles()->orderBy('number', 'asc')->get();
 
@@ -64,7 +66,7 @@ class GenerateTournamentData
         return array_merge($bigger, $lower);
     }
 
-    protected function generateHoles($holes, $round)
+    public function generateHoles($holes, $round)
     {
         if (TournamentHole::where('tournament_round_id', $round)->count() == 0) {
             $cloneHoles = [];

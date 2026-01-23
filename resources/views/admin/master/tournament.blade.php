@@ -66,9 +66,9 @@
                             <legend class="fieldset-legend">Timezone <span class="text-red-700">*</span></legend>
                             <select class="select rounded-xl w-full" name="timezone">
                                 <option disabled selected>Pick Timezone</option>
-                                <option value="Asia/Jakarta">Asia/Jakarta</option>
-                                <option value="Asia/Makassar">Asia/Makassar</option>
-                                <option value="Asia/Jayapura">Asia/Jayapura</option>
+                                <option value="Asia/Jakarta">WIB</option>
+                                <option value="Asia/Makassar">WITA</option>
+                                <option value="Asia/Jayapura">WIT</option>
                             </select>
                         </fieldset>
                     </div>

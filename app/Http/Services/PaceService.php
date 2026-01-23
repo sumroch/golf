@@ -52,7 +52,7 @@ class PaceService
             ->get();
     }
 
-    public function getPacesByTee($tournament_round_id, $tee = 1): ?object
+    public function getPacesByTee($tournament_round_id, $tee = null): ?object
     {
         return TournamentPace::select('tournament_paces.time', 'type', 'finish_at', 'status', 'groups.name', 'groups.tee', 'tournament_holes.number as hole_number', 'tournament_holes.allowed_time')
             ->join('tournament_holes', 'tournament_paces.hole_id', '=', 'tournament_holes.id')
@@ -61,6 +61,7 @@ class PaceService
             ->when(in_array($tee, [1, 10]), fn($query) => $query->where('groups.tee', $tee))
             ->where('tournament_paces.time', '<', Carbon::now()->timezone('Asia/Jakarta')->addMinutes(15)->format('H:i:s'))
             ->where('tournament_paces.time', '>', Carbon::now()->timezone('Asia/Jakarta')->subMinutes(15)->format('H:i:s'))
+            ->whereNotIn('tournament_paces.status', ['unmonitored', 'finish'])
             ->orderBy('tournament_paces.time', 'desc')
             ->get();
     }

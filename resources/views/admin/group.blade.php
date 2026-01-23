@@ -108,6 +108,10 @@
                         <img class="me-2 w-4 h-4" src="{{ asset('img/icon/download.svg') }}" alt="">
                         <span>Download Template</span>
                     </button>
+                    <button class="bg-green-700 rounded-lg shadow text-white px-4 py-1 me-3 text-sm flex items-center cursor-pointer" onclick="hole_modal.show()">
+                        <img class="me-2 w-3 h-3" src="{{ asset('img/icon/table-icon.svg') }}" alt="">
+                        <span>Edit Holes</span>
+                    </button>
                     <label class="bg-green-700 rounded-lg shadow text-white px-4 py-1 text-sm flex items-center cursor-pointer" for="input-file">
                         <img class="me-2 w-3 h-3" src="{{ asset('img/icon/table-icon.svg') }}" alt="">
                         <span>Import From Excel</span>
@@ -137,9 +141,9 @@
                                     <tbody>
                                         @foreach ($teeGroups as $item)
                                             <tr>
-                                                <th class="text-center border border-green-700/50 py-2" rowspan="4">{{ $item->name }}</th>
-                                                <td class="text-center border border-green-700/50 py-2" rowspan="4">{{ $item->time }}</td>
-                                                <td class="text-center border border-green-700/50 py-2" rowspan="4">{{ $item->tee }}</td>
+                                                <th class="text-center border border-green-700/50 py-2" rowspan="{{ $item->total_player }}">{{ $item->name }}</th>
+                                                <td class="text-center border border-green-700/50 py-2" rowspan="{{ $item->total_player }}">{{ $item->time }}</td>
+                                                <td class="text-center border border-green-700/50 py-2" rowspan="{{ $item->total_player }}">{{ $item->tee }}</td>
                                                 <td class="border border-green-700/50 py-2">{{ $item->players[0]->name }}</td>
                                                 <td class="border border-green-700/50 py-2">{{ $item->players[0]->origin }}</td>
                                             </tr>
@@ -176,4 +180,46 @@
             </div>
         </div>
     </div>
+
+    <dialog class="modal" id="hole_modal">
+        <div class="modal-box w-full max-w-7xl max-h-11/12">
+            <form method="dialog">
+                <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+            </form>
+            <h3 class="text-xl font-bold mb-0">Edit Hole</h3>
+            <div class="border-2 border-b-green-700 w-full"></div>
+            <form class="w-full mt-4" action="{{ route('round.group.setting', $round->id) }}" method="POST">
+                @method('PUT')
+                @csrf
+
+                <div class="w-full grid grid-cols-5 gap-4 mt-4">
+                    @foreach ($holes as $key => $item)
+                        <div class="rounded shadow bg-gray-50 border-gray-200 border">
+                            <div class="border-b rounded-t shadow border-gray-200 bg-green-700 px-4 py-2 font-bold text-white">
+                                {{ $item['number'] }}
+                            </div>
+                            <div class="grid grid-cols-2 gap-2 p-4">
+                                <input name="holes[{{ $key }}][id]" type="hidden" value="{{ $item['id'] }}" />
+                                <div class="flex flex-col">
+                                    <label class="text-sm font-bold mb-1">Par</label>
+                                    <input class="input input-bordered w-full" name="holes[{{ $key }}][par]" type="number" value="{{ $item['par'] }}" min="0" max="15" />
+                                </div>
+                                <div class="flex flex-col">
+                                    <label class="text-sm font-bold mb-1">Time</label>
+                                    <input class="input input-bordered w-full" name="holes[{{ $key }}][allowed_time]" type="number" value="{{ $item['allowed_time'] }}" min="0" max="59" />
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+
+                <div class="w-full text-center">
+                    <button class="bg-green-700 rounded-lg shadow text-white px-10 py-2 cursor-pointer mt-4 mx-auto" type="submit">Save</button>
+                </div>
+            </form>
+        </div>
+        <form class="modal-backdrop" method="dialog">
+            <button>close</button>
+        </form>
+    </dialog>
 @endsection

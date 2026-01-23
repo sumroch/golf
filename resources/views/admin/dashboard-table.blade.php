@@ -81,9 +81,6 @@
                     <div class="w-full flex items-center justify-between">
                         <p class="text-xl font-bold">PACE OF PLAY - {{ strtoupper($session) }}</p>
                         <div class="flex items-center">
-                            <button class="bg-green-700 rounded-lg text-white me-5 px-4 py-2 text-sm cursor-pointer hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
-                                Edit Table
-                            </button>
                             <label class="label text-sm me-4">
                                 <div class="h-6 w-6 rounded bg-gray-300 me-1 shadow"></div>
                                 <span>Completed</span>
