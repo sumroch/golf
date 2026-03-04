@@ -19,12 +19,9 @@ class TournamentRoundFactory extends Factory
         $transfortationOptions = ['cart', 'combine', 'walk'];
 
         return [
-            'tee_area' => json_encode(['blue', 'white']),
             'start_interval' => $this->faker->time(),
-            'morning_one' => $this->faker->time(),
-            'morning_ten' => $this->faker->time(),
-            'afternoon_one' => $this->faker->time(),
-            'afternoon_ten' => $this->faker->time(),
+            'morning' => $this->faker->time(),
+            'afternoon' => $this->faker->time(),
             'crossover_one' => $this->faker->time(),
             'crossover_ten' => $this->faker->time(),
             'ball' => rand(2, 4),

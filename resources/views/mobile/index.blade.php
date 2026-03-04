@@ -45,8 +45,14 @@
                 return {
                     observer: {{ Js::from($holes) }},
                     activeObserver: {{ $holes[0]->id ?? 0 }},
+                    activeObserverKey: 0,
                     activeObserverName: '{{ $holes[0]->name ?? '' }}',
                     activePace: {},
+                    activePaceKey: 0,
+                    nextPaceDisable: false,
+                    prevPaceDisable: true,
+                    nextObserverDisable: false,
+                    prevObserverDisable: true,
                     member: [],
                     memberFirst: [],
                     memberSecond: [],
@@ -73,6 +79,7 @@
                             if (!this.activePace?.id) {
                                 this.activePace = response.data.data.all[0];
                             }
+
                             this.preloader(false);
                         })
                         .catch(error => {
@@ -95,7 +102,46 @@
 
                     setTimeout(() => {
                         this.preloader(false);
-                    }, 500);
+                    }, 300);
+                },
+                changeActiveObserverArrow(type = 'next') {
+                    if (type === 'next') {
+                        if (this.activeObserverKey + 1 <= this.observer.length - 1) {
+                            this.activeObserverKey = this.activeObserverKey + 1;
+                            this.activeObserver = this.observer[this.activeObserverKey]?.id;
+                            this.activeObserverName = this.observer[this.activeObserverKey]?.name;
+                        }
+                    } else if (type === 'prev') {
+                        if (this.activeObserverKey - 1 >= 0) {
+                            this.activeObserverKey = this.activeObserverKey - 1;
+                            this.activeObserver = this.observer[this.activeObserverKey]?.id;
+                            this.activeObserverName = this.observer[this.activeObserverKey]?.name;
+                        }
+                    }
+
+                    this.activePaceKey = 0;
+                    this.activePace = this.member[0];
+
+                    this.getData();
+                },
+                changeActivePaceArrow(type = 'next') {
+                    this.preloader(true);
+
+                    if (type === 'next') {
+                        if (this.activePaceKey + 1 <= this.member.length - 1) {
+                            this.activePaceKey = this.activePaceKey + 1;
+                            this.activePace = this.member[this.activePaceKey];
+                        }
+                    } else if (type === 'prev') {
+                        if (this.activePaceKey - 1 >= 0) {
+                            this.activePaceKey = this.activePaceKey - 1;
+                            this.activePace = this.member[this.activePaceKey];
+                        }
+                    }
+
+                    setTimeout(() => {
+                        this.preloader(false);
+                    }, 300);
                 },
                 finishTimer() {
                     this.preloader(true);
@@ -135,14 +181,13 @@
         });
         app.mount('#app');
     </script>
-
 @endsection
 
 @section('page-content')
     <div class="bg-gray-100 h-screen">
-        <div class="w-full md:w-1/3 flex items-start justify-center flex-wrap mx-auto" id="app">
+        <div class="w-full max-w-[500px] flex items-start justify-center flex-wrap mx-auto" id="app">
 
-            <div class="w-full bg-green-700 p-6 flex items-center justify-between">
+            <div class="w-full bg-green-700 px-6 py-2 flex items-center justify-between">
                 <div class="dropdown dropdown-right">
                     <img class="w-5 h-auto cursor-pointer" src="{{ asset('img/icon/bar.svg') }}" alt="bar menu" role="button" tabindex="0">
                     <form action="{{ route('logout') }}" method="POST">@csrf
@@ -153,7 +198,11 @@
                         </ul>
                     </form>
                 </div>
-                <h2 class="text-xl text-center text-white m-0">{{ auth()->user()->name }}</h2>
+                <div>
+                    <h2 class="text-xl text-center text-white m-0">{{ auth()->user()->name }} <span class="text-base">{{ $observer_target }}</span></h2>
+                    <hr class="border mt-1 border-white">
+                    <h2 class="text-xl text-center text-white m-0">{{ $course_name }}</h2>
+                </div>
                 <img class="w-7 h-auto cursor-pointer" src="{{ asset('img/icon/notification.svg') }}" alt="notification">
             </div>
 
@@ -172,51 +221,83 @@
                 </div>
             @endif
 
-            <section class="w-full flex items-center justify-between p-3 mt-2">
-                <div class="w-1/2 pe-2">
-                    <div class="w-full rounded-2xl shadow-lg p-4 text-center bg-white">
-                        <p class="text-xl">Time Allowed</p>
-                        <h2 class="text-4xl mt-2 mb-1" v-text="activePace.allowed_time"></h2>
+            <section class="w-full flex items-center justify-between p-1 mt-2">
+                <div class="w-1/2 pe-1">
+                    <div class="w-full rounded-2xl shadow-lg py-3 text-center bg-white">
+                        <p class="flex items-center justify-between mb-1 px-1 text-green-700">
+                            <svg class="h-10 w-10 fill-current md:h-8 md:w-8 rtl:rotate-180 cursor-pointer" :class="{ 'text-gray-300': activeObserverKey == 0 }" v-on:click="changeActiveObserverArrow('prev')" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                                <path d="M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z"></path>
+                            </svg>
+                            <span class="text-balance">
+                                <span class="text-base me-2 font-bold" v-text="activeObserverName"></span>
+                                <span class="text-sm" v-text="activePace.par"></span>
+                            </span>
+                            <svg class="h-10 w-10 fill-current md:h-8 md:w-8 rtl:rotate-180 cursor-pointer" :class="{ 'text-gray-300': activeObserverKey == observer.length - 1 }" v-on:click="changeActiveObserverArrow('next')" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                                <path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"></path>
+                            </svg>
+                        </p>
+                        <p class="text-lg px-4">Time Allowed</p>
+                        <h2 class="text-4xl mb-1 px-4" v-text="activePace.allowed_time"></h2>
                     </div>
                 </div>
 
-                <div class="w-1/2 ps-2">
-                    <div class="w-full rounded-2xl shadow-lg p-4 text-center bg-white">
-                        <p class="text-xl">Target</p>
-                        <h2 class="text-4xl mt-2 mb-1" v-text="activePace.time"></h2>
+                <div class="w-1/2 ps-1">
+                    <div class="w-full rounded-2xl shadow-lg py-3 text-center bg-white">
+                        <p class="flex items-center justify-between mb-1 px-1 text-green-700">
+                            <svg class="h-10 w-10 fill-current md:h-8 md:w-8 rtl:rotate-180 cursor-pointer" :class="{ 'text-gray-300': activePaceKey == 0 }" v-on:click="changeActivePaceArrow('prev')" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                                <path d="M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z"></path>
+                            </svg>
+                            <span class="text-balance">
+                                <span class="text-base me-2 font-bold" v-text="activePace.name"></span>
+                            </span>
+                            <svg class="h-10 w-10 fill-current md:h-8 md:w-8 rtl:rotate-180 cursor-pointer" :class="{ 'text-gray-300': activePaceKey == member.length - 1 }" v-on:click="changeActivePaceArrow('next')" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                                <path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"></path>
+                            </svg>
+                        </p>
+                        <p class="text-lg px-4">Target</p>
+                        <h2 class="text-4xl mb-1 px-4" v-text="activePace.time"></h2>
                     </div>
                 </div>
             </section>
 
-            <section class="w-full flex items-center justify-between p-2 mt-3">
+            {{-- <section class="w-full flex items-center justify-between p-2 mt-3">
                 <div class="w-full flex items-start justify-between">
                     <div class="w-full px-1 text-center cursor-pointer text-xl text-gray-500" v-for="item in observer" :key="item.id">
                         <a :class="{ 'text-2xl font-bold text-green-700': activeObserver === item.id }" v-on:click="changeActiveObserver(item.id)" v-text="item.name"></a>
                     </div>
                 </div>
-            </section>
+            </section> --}}
 
             <section class="w-full flex items-center justify-center mb-14 mt-6">
-                <h1 class="text-8xl font-bold" id="clock"><span class="hm"></span><span class="text-6xl sec">27</span></h1>
+                <h1 class="max-[350px]:text-[4.5rem] max-[400px]:text-[5rem] max-[500px]:text-[5.5rem] max-[640px]:text-[6rem] sm:text-8xl md:text-8xl font-bold" id="clock">
+                    <span class="hm me-1"></span>
+                    <span class="text-5xl sec">27</span>
+                </h1>
             </section>
 
             <section class="w-full flex items-end justify-around mb-12">
                 <div class="text-center">
-                    <button class="w-27 rounded-full border border-green-700 p-8 bg-white shadow-lg active:scale-95 hover:bg-green-100 transition cursor-pointer" onclick="my_modal_2.showModal()">
+                    <button class="w-27 rounded-full border border-green-700 p-8 bg-white shadow-lg active:scale-95 hover:bg-green-100 transition cursor-pointer" onclick="my_modal_2.showModal()" v-if="activePace.status !== 'finish' && activePace.status !== 'unmonitored'">
+                        <img class="w-full h-auto" src="{{ asset('img/flag.png') }}" alt="Play Button">
+                    </button>
+                    <button class="w-27 rounded-full border border-gray-700 p-8 bg-gray-700 shadow-lg active:scale-95 transition cursor-pointer" v-else>
                         <img class="w-full h-auto" src="{{ asset('img/flag.png') }}" alt="Play Button">
                     </button>
                     <p class="mt-2">FINISH</p>
                 </div>
 
                 <div class="text-center">
-                    <button class="w-20 rounded-full p-6 bg-red-700 shadow-lg active:scale-95 hover:bg-green-100 transition cursor-pointer" v-on:click="unmonitoredTimer()">
+                    <button class="w-20 rounded-full p-6 bg-red-700 shadow-lg active:scale-95 hover:bg-green-100 transition cursor-pointer" v-on:click="unmonitoredTimer()" v-if="activePace.status !== 'finish' && activePace.status !== 'unmonitored'">
+                        <img class="w-full h-auto" src="{{ asset('img/unlink.png') }}" alt="Play Button">
+                    </button>
+                    <button class="w-20 rounded-full p-6 bg-gray-700 shadow-lg active:scale-95 transition cursor-pointer" v-else>
                         <img class="w-full h-auto" src="{{ asset('img/unlink.png') }}" alt="Play Button">
                     </button>
                     <p class="mt-2 text-red-700">UNMONITORED</p>
                 </div>
             </section>
 
-            <section class="w-full md:w-1/3 flex items-center justify-center flex-wrap bottom-0 absolute">
+            <section class="w-full max-w-[500px] flex items-center justify-center flex-wrap bottom-0 absolute">
                 <div class="w-full collapse collapse-arrow rounded-none bg-base-100 border-base-300 border">
                     <input type="checkbox" />
                     <div class="collapse-title py-2 text-2xl rounded-none text-center font-bold text-white bg-green-700" v-text="activeObserverName"></div>
@@ -224,12 +305,14 @@
                         <button class="w-full flex items-center justify-between py-3 px-4 border-bottom border-b border-gray-400 cursor-pointer" type="button" :class="{ 'bg-gray-300': item.id == activePace.id }" v-for="item in memberFirst" :key="item.id" v-on:click="changeActivePace(item.id)">
                             <p class="w-1/3 text-start" v-text="item.name"></p>
                             <p class="w-1/3" v-text="item.time"></p>
+                            <p class="w-1/3 text-end" :class="{ 'text-green-700': item.progress == 'ontime', 'text-red-700': item.progress == 'late' }" v-text="item.finish_time"></p>
                             <p class="w-1/3 text-end" :class="{ 'text-green-700': item.progress == 'ontime', 'text-red-700': item.progress == 'late' }" v-if="item.status !=='unmonitored'" v-text="item.time_diff"></p>
                             <p class="w-1/3 text-end text-red-700" v-else>UNMONITORED</p>
                         </button>
                         <button class="w-full flex items-center justify-between py-3 px-4 border-bottom border-b border-gray-400 cursor-pointer" type="button" :class="{ 'bg-gray-300': item.id == activePace.id }" v-for="item in memberSecond" :key="item.id" v-on:click="changeActivePace(item.id)">
                             <p class="w-1/3 text-start" v-text="item.name"></p>
                             <p class="w-1/3" v-text="item.time"></p>
+                            <p class="w-1/3 text-end" :class="{ 'text-green-700': item.progress == 'ontime', 'text-red-700': item.progress == 'late' }" v-text="item.finish_time"></p>
                             <p class="w-1/3 text-end" :class="{ 'text-green-700': item.progress == 'ontime', 'text-red-700': item.progress == 'late' }" v-if="item.status !=='unmonitored'" v-text="item.time_diff"></p>
                             <p class="w-1/3 text-end text-red-700" v-else>UNMONITORED</p>
                         </button>

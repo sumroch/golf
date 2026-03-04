@@ -22,6 +22,10 @@ class TournamentRoundController extends Controller
      */
     public function dashboard($round, Request $request, PaceService $paceService)
     {
+        if (!$request->wantsJson() && !$request->ajax()) {
+            return view('admin.dashboard');
+        }
+
         $tournamentRound = TournamentRound::where('id', $round)
             ->with(['groups.players', 'tournament.course', 'tournament.rounds'])
             ->first();
@@ -29,11 +33,14 @@ class TournamentRoundController extends Controller
         $tournamentByHole = $paceService->getPacesByHoles($round, $request->input('session', 'morning'));
         $tournamentByTee = $paceService->getPacesByTee($round, $request->input('tee'));
 
-        return view('admin.dashboard', [
-            'round' => TournamentFactory::dashboard($tournamentRound),
-            'holes' => PaceFactory::byHole($tournamentByHole),
-            'tees' => PaceFactory::byTee($tournamentByTee),
-        ]);
+        return $this->apiResponseSuccess(
+            [
+                'round' => TournamentFactory::dashboard($tournamentRound),
+                'holes' => PaceFactory::byHole($tournamentByHole),
+                'tees' => PaceFactory::byTee($tournamentByTee),
+                'updated_at' => now()->timezone($tournamentRound->tournament->timezone)->format('Y-m-d H:i'),
+            ]
+        );
     }
 
     /**
@@ -49,6 +56,8 @@ class TournamentRoundController extends Controller
             'round' => TournamentFactory::dashboard($tournamentRound),
             'tee_one' => $holes[1],
             'tee_ten' => $holes[10],
+            'total_one' => $holes['total_one'],
+            'total_ten' => $holes['total_ten'],
             'paces' => PaceFactory::callWithDetail($paceService->getCurrentTournamentPace($round)),
         ]);
     }
@@ -68,6 +77,8 @@ class TournamentRoundController extends Controller
             'round' => TournamentFactory::dashboard($tournamentRound),
             'tee_one' => $holes[1],
             'tee_ten' => $holes[10],
+            'total_one' => $holes['total_one'],
+            'total_ten' => $holes['total_ten'],
             'paces' => PaceFactory::callWithDetail($paceService->getCurrentTournamentPace($round)),
         ]);
     }
@@ -88,7 +99,7 @@ class TournamentRoundController extends Controller
     public function storeSetup($round, UpdateTournamentRoundRequest $request)
     {
         $tournament = TournamentRound::findOrFail($round);
-        $reqs = $request->only(['tee_area', 'start_interval', 'morning_one', 'morning_ten', 'afternoon_one', 'afternoon_ten', 'crossover_one', 'crossover_ten', 'ball', 'transportation', 'timezone']);
+        $reqs = $request->only(['start_interval', 'morning', 'afternoon', 'crossover_one', 'crossover_ten', 'ball', 'transportation', 'timezone']);
 
         if ($tournament->status === 'setup') {
             $reqs['status'] = 'group';

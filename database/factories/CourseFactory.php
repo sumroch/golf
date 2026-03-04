@@ -19,7 +19,7 @@ class CourseFactory extends Factory
         return [
             'name' => $this->faker->streetName(),
             'location' => $this->faker->city(),
-            'par' => 48,
+            'par' => 72,
             'total_holes' => 18,
         ];
     }

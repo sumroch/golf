@@ -46,6 +46,9 @@ class AuthController extends Controller
             if ($request->user()->hasRole(['referee', 'observer']))
                 return redirect()->route('sign-success');
 
+            if (!$request->user()->hasRole(['referee', 'observer']) && $request->input('section') === 'referee')
+                return redirect()->route('referee');
+
             if ($checkTournament->exist())
                 return redirect()->route('dashboard', ['round' => $checkTournament->roundActiveId()]);
 

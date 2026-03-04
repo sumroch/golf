@@ -2,37 +2,6 @@
 
 @section('page-title', 'Dashboard')
 
-{{-- @section('page-script')
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-
-    <script>
-        const app = Vue.createApp({
-            data() {
-                return {
-                    //
-                }
-            },
-            methods: {
-                preview() {
-                    axios.get('/admin/group/{{ $round->id }}/preview')
-                        .then(response => {
-                            console.log(response.data);
-                        })
-                        .catch(error => {
-                            console.error(error);
-                        });
-                }
-            },
-            mounted() {
-                //
-            }
-        });
-
-        app.mount('#app');
-    </script>
-@endsection --}}
-
 @section('page-content')
     <div class="w-full max-h-screen h-full overflow-auto bg-gray-100" id="app">
         <div class="w-full px-1">
@@ -104,10 +73,10 @@
                             <span>Delete Group</span>
                         </button>
                     </form>
-                    <button class="bg-white rounded-lg shadow px-4 py-1 text-sm me-3 border border-gray-300 flex items-center cursor-pointer">
+                    <a class="bg-white rounded-lg shadow px-4 py-1 text-sm me-3 border border-gray-300 flex items-center cursor-pointer" href="{{ asset('document/template.xlsx') }}" target="_blank">
                         <img class="me-2 w-4 h-4" src="{{ asset('img/icon/download.svg') }}" alt="">
                         <span>Download Template</span>
-                    </button>
+                    </a>
                     <button class="bg-green-700 rounded-lg shadow text-white px-4 py-1 me-3 text-sm flex items-center cursor-pointer" onclick="hole_modal.show()">
                         <img class="me-2 w-3 h-3" src="{{ asset('img/icon/table-icon.svg') }}" alt="">
                         <span>Edit Holes</span>
@@ -202,7 +171,7 @@
                                 <input name="holes[{{ $key }}][id]" type="hidden" value="{{ $item['id'] }}" />
                                 <div class="flex flex-col">
                                     <label class="text-sm font-bold mb-1">Par</label>
-                                    <input class="input input-bordered w-full" name="holes[{{ $key }}][par]" type="number" value="{{ $item['par'] }}" min="0" max="15" />
+                                    <input class="input input-bordered w-full" name="holes[{{ $key }}][par]" type="number" value="{{ $item['par'] }}" min="3" max="5" />
                                 </div>
                                 <div class="flex flex-col">
                                     <label class="text-sm font-bold mb-1">Time</label>

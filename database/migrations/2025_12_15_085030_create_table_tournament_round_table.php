@@ -15,12 +15,9 @@ return new class extends Migration
             $table->id();
             $table->foreignId('tournament_id')->constrained('tournaments')->onDelete('cascade');
             $table->unsignedSmallInteger('round_number')->default(1);
-            $table->string('tee_area')->default(json_encode([]));
             $table->time('start_interval', 0)->default('00:00:00');
-            $table->time('morning_one', 0)->default('00:00:00');
-            $table->time('morning_ten', 0)->default('00:00:00');
-            $table->time('afternoon_one', 0)->default('00:00:00');
-            $table->time('afternoon_ten', 0)->default('00:00:00');
+            $table->time('morning', 0)->default('00:00:00');
+            $table->time('afternoon', 0)->default('00:00:00');
             $table->time('crossover_one', 0)->default('00:00:00');
             $table->time('crossover_ten', 0)->default('00:00:00');
             $table->date('date')->nullable();

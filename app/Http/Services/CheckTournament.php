@@ -15,7 +15,7 @@ class CheckTournament
     public function call(): void
     {
         if ($this->load === false) {
-            $this->tournament = Tournament::where('status', '!=', 'finish')->first();
+            $this->tournament = Tournament::where('status', 'active')->first();
             $this->tournamentRound = $this->tournament ? $this->tournament->rounds()->where('status', '!=', 'finish')->first() : null;
             $this->load = true;
         }

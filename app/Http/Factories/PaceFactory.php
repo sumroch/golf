@@ -46,6 +46,8 @@ class PaceFactory
 
                         $pace->progress = null;
                         $pace->time_diff = '-';
+                        $pace->finish_class = '';
+                        $pace->finish_text_class = '';
                         $allow = Carbon::parse($pace->date . ' ' . $pace->time, 'Asia/Jakarta');
 
                         $pace->progress_class = 'bg-white';
@@ -56,17 +58,21 @@ class PaceFactory
 
                             $pace->time_diff_float = $allow->diffInMinutes($finish, false);
                             $pace->time_diff = (int) $pace->time_diff_float;
+                            $pace->time_diff_integer = ($pace->time_diff >= 0 ? '+' : '') . $pace->time_diff;
                             $pace->time_diff = '( ' . ($pace->time_diff >= 0 ? '+' : '') . $pace->time_diff . ' mins )';
 
                             if ($pace->time_diff_float < 1) {
                                 $pace->progress = 'ontime';
                                 $pace->finish_class = 'bg-green-600';
+                                $pace->finish_text_class = 'text-green-600';
                             } elseif ($pace->time_diff_float > 1 && $pace->time_diff_float <= 3) {
                                 $pace->progress = 'late';
                                 $pace->finish_class = 'bg-yellow-400';
+                                $pace->finish_text_class = 'text-yellow-400';
                             } elseif ($pace->time_diff_float > 3) {
                                 $pace->progress = 'overdue';
                                 $pace->finish_class = 'bg-red-500';
+                                $pace->finish_text_class = 'text-red-500';
                             }
 
                             $pace->finish_at = $finish->format('H:i');
@@ -74,14 +80,18 @@ class PaceFactory
                             $pace->progress_class = 'bg-gray-300/50';
                         }
 
+                        if ($pace->status == 'unmonitored') {
+                            $pace->progress_class = 'bg-red-700';
+                            $pace->progress = 'unmonitored';
+                        }
+
                         $now = Carbon::now()->timezone('Asia/Jakarta');
 
                         if ($allow->diffInMinutes($now, false) > -10 && $allow->diffInMinutes($now, false) < 10) {
-                            $pace->progress_class = 'bg-red-300';
+                            $pace->progress_class = 'bg-red-200 text-red-800';
                         }
 
                         $pace->time = Carbon::parse($pace->time)->format('H:i');
-
 
                         return $pace;
                     })->values();

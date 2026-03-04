@@ -3,8 +3,6 @@
 namespace App\Http\Services;
 
 use App\Models\Group;
-use App\Models\Hole;
-use App\Models\Tournament;
 use App\Models\TournamentHole;
 use App\Models\TournamentPace;
 use Carbon\Carbon;
@@ -34,9 +32,22 @@ class PaceService
             return $hole;
         });
 
+        $total_one = '00:00';
+        $total_ten = '00:00';
+
+        foreach ($holes as $hole) {
+            if ($hole->number <= 9) {
+                $total_one = Carbon::parse($total_one)->addMinutes(Carbon::parse($hole->allowed_time)->minute);
+            } else {
+                $total_ten = Carbon::parse($total_ten)->addMinutes(Carbon::parse($hole->allowed_time)->minute);
+            }
+        }
+
         return [
             1 => $holes->where('number', '<=', 9),
             10 => $holes->where('number', '>', 9),
+            'total_one' => $total_one->format('H:i'),
+            'total_ten' => $total_ten->format('H:i'),
         ];
     }
 

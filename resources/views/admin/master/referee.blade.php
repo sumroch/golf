@@ -122,7 +122,13 @@
                                                 </div>
                                                 <ul class="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-[0px_0px_4px_0px_rgba(0,0,0,0.2)]" tabindex="-1">
                                                     <li><button v-on:click="showData({{ $key }})">Edit</button></li>
-                                                    <li><a href="{{ route('referee.destroy', $item->id) }}">Delete</a></li>
+                                                    <li>
+                                                        <form class="w-full h-full inline-block relative" action="{{ route('referee.destroy', $item->id) }}" method="POST">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button class="inline-block w-full h-full text-left cursor-pointer" type="submit">Delete</button>
+                                                        </form>
+                                                    </li>
                                                 </ul>
                                             </div>
                                         </td>
@@ -214,7 +220,7 @@
                         <div class="w-full grid grid-cols-2 gap-18">
                             <div class="w-full flex items-center gap-4 mt-4">
                                 <legend class="fieldset-legend w-1/2 flex justify-start">Full Name<span class="text-red-700">*</span></legend>
-                                <input class="input rounded-xl validator placeholder:text-gray-500 placeholder:italic w-full" name="name" type="text" required placeholder="Full Name"  v-model="form.name"/>
+                                <input class="input rounded-xl validator placeholder:text-gray-500 placeholder:italic w-full" name="name" type="text" required placeholder="Full Name" v-model="form.name" />
                             </div>
 
                             <div class="w-full flex items-center gap-4 mt-4">
@@ -243,7 +249,7 @@
                         </div>
                         <div class="w-full flex items-center gap-4 mt-4">
                             <legend class="fieldset-legend w-1/6 flex justify-start">Password<span class="text-red-700">*</span></legend>
-                            <input class="input rounded-xl validator placeholder:text-gray-500 placeholder:italic w-full" id="passinput-update" name="password" type="text" placeholder="Password"/>
+                            <input class="input rounded-xl validator placeholder:text-gray-500 placeholder:italic w-full" id="passinput-update" name="password" type="text" placeholder="Password" />
                         </div>
                         <p class="text-xs underline underline-offset-1 cursor-pointer w-full text-end mt-1" v-on:click="generateSecurePassword('update')">Generate Password</p>
                         <p class="underline underline-offset-1 cursor-pointer w-full text-center mt-2">Generate QR Code for Login</p>

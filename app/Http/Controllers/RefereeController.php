@@ -2,11 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Course;
-use App\Http\Requests\StoreCourseRequest;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
-use App\Models\Hole;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -36,7 +33,7 @@ class RefereeController extends Controller
             'password' => bcrypt($request->input('password')),
         ]);
         
-        $user->assignRole($request->input('role', 'referee'));
+        $user->assignRole($request->input('position', 'referee'));
 
         return redirect()->route('referee.index');
     }
@@ -47,6 +44,7 @@ class RefereeController extends Controller
     public function update(UpdateUserRequest $request, $id)
     {
         $user = User::findOrFail($id);
+
         $user->update([
             'name' => $request->input('name'),
             'acronym' => $request->input('acronym'),
@@ -55,6 +53,8 @@ class RefereeController extends Controller
             'email' => $request->input('email'),
             'password' =>  bcrypt($request->input('password')),
         ]);
+
+        $user->syncRoles($request->input('position', 'referee'));
 
         return redirect()->route('referee.index');
     }

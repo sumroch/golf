@@ -23,7 +23,7 @@
                 <div class="text-2xl leading-8">
                     <p>{{ $round['course'] }} - {{ $round['total_hole'] }} Holes</p>
                     <p>{{ $round['date_start'] }}</p>
-                    <p>{{ $round['tee_area'] }} | {{ $round['ball'] }} | {{ $round['transportation'] }}</p>
+                    <p>{{ $round['ball'] }} | {{ $round['transportation'] }}</p>
                 </div>
             </div>
             <div class="w-auto">
@@ -95,7 +95,7 @@
                             </label>
                         </div>
                     </div>
-                    @foreach ($teeGroups as $groups)
+                    @foreach ($teeGroups as $keyGroups => $groups)
                         <div class="w-full">
                             <div class="rounded-box border border-base-content/5 bg-base-100 w-full">
                                 <table class="table text-center border border-gray-200">
@@ -103,14 +103,20 @@
                                     <thead class="text-black">
                                         <tr>
                                             <th class="bg-white font-normal border-b-transparent" colspan="2">Time Allowed</th>
-                                            <th class="bg-white border-s border-s-gray-300/50 border-b-transparent font-normal">00:02:08</th>
+                                            <th class="bg-white border-s border-s-gray-300/50 border-b-transparent font-normal">{{ $teeIndex == 1 ? $total_one : $total_ten }}</th>
                                             @foreach ($teeIndex == 1 ? $tee_one : $tee_ten as $hole)
                                                 <th class="bg-white border-s border-s-gray-300/50 border-b-transparent font-normal">({{ $hole->allowed_time }})</th>
                                             @endforeach
                                         </tr>
                                         <tr>
                                             <th class="bg-white border-b-transparent">Group</th>
-                                            <th class="bg-white border-s border-s-gray-300/50 border-b-transparent">START TEE {{ $teeIndex }}</th>
+                                            <th class="bg-white border-s border-s-gray-300/50 border-b-transparent">
+                                                @if ($keyGroups == 0)
+                                                    START TEE {{ $teeIndex }}
+                                                @else
+                                                    CROSSOVER from TEE {{ $teeIndex }}
+                                                @endif
+                                            </th>
                                             <th class="bg-white border-s border-s-gray-300/50 border-b-transparent">Start</th>
                                             @foreach ($teeIndex == 1 ? $tee_one : $tee_ten as $hole)
                                                 <th class="bg-white border-s border-s-gray-300/50 border-b-transparent">{{ $hole->number }}</th>
@@ -147,10 +153,14 @@
                                                 <td class="bg-white border-s border-s-gray-300/50 border-b-transparent">{{ $group['time'] }}</td>
                                                 @foreach ($group['paces'] as $pace)
                                                     <td class="{{ $pace->progress_class }} border-s border-s-gray-300/50 border-b-transparent relative">
+                                                        {{ $pace->time }}
                                                         @if ($pace->finish_at)
                                                             <div class="font-bold h-2 w-2 rounded-full bg-black absolute top-2 right-2 {{ $pace->finish_class }}"></div>
+
+                                                            <span class="text-xs {{ $pace->finish_text_class }}">
+                                                                ({{ $pace->time_diff_integer }})
+                                                            </span>
                                                         @endif
-                                                        {{ $pace->time }}
                                                     </td>
                                                 @endforeach
                                             </tr>

@@ -108,8 +108,8 @@
             </div>
             <ul class="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm" tabindex="-1">
                 <li>
-                    <form action="{{ route('logout') }}" method="POST">@csrf
-                        <button type="submit" class="w-full text-start">Logout</button>
+                    <form class="inline-block" action="{{ route('logout') }}" method="POST">@csrf
+                        <button type="submit" class="w-full text-start h-full inline-block">Logout</button>
                     </form>
                 </li>
             </ul>

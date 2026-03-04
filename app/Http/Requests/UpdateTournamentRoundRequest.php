@@ -23,18 +23,12 @@ class UpdateTournamentRoundRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'tee_area' => ['required', 'array'],
-            'tee_area.*' => ['required', Rule::in(['blue', 'white', 'red', 'yellow', 'black'])],
             'start_interval_hour' => ['required', 'numeric', 'min:0', 'max:23'],
             'start_interval_minute' => ['required', 'numeric', 'min:0', 'max:59'],
-            'morning_one_hour' => ['required', 'numeric', 'min:0', 'max:23'],
-            'morning_one_minute' => ['required', 'numeric', 'min:0', 'max:59'],
-            'morning_ten_hour' => ['required', 'numeric', 'min:0', 'max:23'],
-            'morning_ten_minute' => ['required', 'numeric', 'min:0', 'max:59'],
-            'afternoon_one_hour' => ['required', 'numeric', 'min:0', 'max:23'],
-            'afternoon_one_minute' => ['required', 'numeric', 'min:0', 'max:59'],
-            'afternoon_ten_hour' => ['required', 'numeric', 'min:0', 'max:23'],
-            'afternoon_ten_minute' => ['required', 'numeric', 'min:0', 'max:59'],
+            'morning_hour' => ['required', 'numeric', 'min:0', 'max:23'],
+            'morning_minute' => ['required', 'numeric', 'min:0', 'max:59'],
+            'afternoon_hour' => ['required', 'numeric', 'min:0', 'max:23'],
+            'afternoon_minute' => ['required', 'numeric', 'min:0', 'max:59'],
             'crossover_one_hour' => ['required', 'numeric', 'min:0', 'max:23'],
             'crossover_one_minute' => ['required', 'numeric', 'min:0', 'max:59'],
             'crossover_ten_hour' => ['required', 'numeric', 'min:0', 'max:23'],
@@ -49,10 +43,8 @@ class UpdateTournamentRoundRequest extends FormRequest
         $this->merge([
             'tee_area' => json_encode($this->tee_area),
             'start_interval' => $this->formatTime($this->start_interval_hour, $this->start_interval_minute),
-            'morning_one' => $this->formatTime($this->morning_one_hour, $this->morning_one_minute),
-            'morning_ten' => $this->formatTime($this->morning_ten_hour, $this->morning_ten_minute),
-            'afternoon_one' => $this->formatTime($this->afternoon_one_hour, $this->afternoon_one_minute),
-            'afternoon_ten' => $this->formatTime($this->afternoon_ten_hour, $this->afternoon_ten_minute),
+            'morning' => $this->formatTime($this->morning_hour, $this->morning_minute),
+            'afternoon' => $this->formatTime($this->afternoon_hour, $this->afternoon_minute),
             'crossover_one' => $this->formatTime($this->crossover_one_hour, $this->crossover_one_minute),
             'crossover_ten' => $this->formatTime($this->crossover_ten_hour, $this->crossover_ten_minute),
         ]);

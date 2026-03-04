@@ -20,14 +20,12 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware(['auth'])->group(function () {
-    Route::middleware(['role:referee|observer'])->group(function () {
-        Route::get('/sign-success', [MobileController::class, 'success'])->name('sign-success');
+    Route::get('/sign-success', [MobileController::class, 'success'])->name('sign-success');
 
-        Route::get('/referee', [MobileController::class, 'index'])->name('referee');
-        Route::get('/referee/{id}', [MobileController::class, 'showMember'])->name('referee.observer');
-        Route::post('/referee/{id}/finish', [MobileController::class, 'finish'])->name('referee.finish');
-        Route::post('/referee/{id}/unmonitored', [MobileController::class, 'unmonitored'])->name('referee.unmonitored');
-    });
+    Route::get('/referee', [MobileController::class, 'index'])->name('referee');
+    Route::get('/referee/{id}', [MobileController::class, 'showMember'])->name('referee.observer');
+    Route::post('/referee/{id}/finish', [MobileController::class, 'finish'])->name('referee.finish');
+    Route::post('/referee/{id}/unmonitored', [MobileController::class, 'unmonitored'])->name('referee.unmonitored');
 
     Route::get('/change-language/{lang}', [AuthController::class, 'changeLanguage'])->name('change-language');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
@@ -35,6 +33,8 @@ Route::middleware(['auth'])->group(function () {
 
 Route::middleware(['auth', 'role:admin|technician|director'])->prefix('admin')->group(function () {
     Route::middleware('check_tournament')->group(function () {
+        Route::get('/group/template-download', [TournamentRoundGroupController::class, 'downloadTemplate'])->name('round.group.template-download');
+
         Route::get('/dashboard/{round}', [TournamentRoundController::class, 'dashboard'])->name('dashboard');
         Route::get('/dashboard-table/{round}', [TournamentRoundController::class, 'dashboardTable'])->name('dashboard-table');
         Route::get('/dashboard-table-print/{round}', [TournamentRoundController::class, 'dashboardTablePrint'])->name('dashboard-table-print');
@@ -60,10 +60,9 @@ Route::middleware(['auth', 'role:admin|technician|director'])->prefix('admin')->
 
 
     Route::prefix('master')->group(function () {
-        Route::get('/tournament', [TournamentController::class, 'index'])->name('tournament.index');
-        Route::post('/tournament', [TournamentController::class, 'store'])->name('tournament.store');
-
-        Route::resource('/referee', RefereeController::class)->names('referee');
+        Route::get('/tournament/active/{tournament}', [TournamentController::class, 'active'])->name('tournament.active');
+        Route::resource('/tournament', TournamentController::class)->only(['index', 'create', 'store', 'update', 'edit', 'destroy'])->names('tournament');
+        Route::resource('/referee', RefereeController::class)->only(['index', 'store', 'update', 'destroy'])->names('referee');
 
         Route::get('/users', function () {
             return view('admin.master.users');
@@ -72,10 +71,15 @@ Route::middleware(['auth', 'role:admin|technician|director'])->prefix('admin')->
 
     Route::prefix('grandmaster')->group(function () {
         Route::resource('/courses-and-holes', CourseController::class)
-        ->names('course')
-        ->parameter('courses-and-holes', 'course')
-        ->only([
-            'index', 'create', 'store', 'edit', 'update', 'destroy'
-        ]);
+            ->names('course')
+            ->parameter('courses-and-holes', 'course')
+            ->only([
+                'index',
+                'create',
+                'store',
+                'edit',
+                'update',
+                'destroy'
+            ]);
     });
 });

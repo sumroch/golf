@@ -1,27 +1,13 @@
 @extends('layouts.admin')
 
-@section('page-title', 'Create Tournament')
-
-@section('page-css')
-    <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet">
-@endsection
-
-@section('page-script')
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script>
-        flatpickr("#date_start", {
-            dateFormat: "Y-m-d",
-        });
-    </script>
-@endsection
+@section('page-title', 'Tournament')
 
 @section('page-content')
-    <form class="w-full max-h-screen h-full overflow-auto bg-gray-100" method="POST" action="{{ route('tournament.store') }}">
-        @csrf
+    <div class="w-full max-h-screen h-full overflow-auto bg-gray-100" id="app">
         <div class="w-full px-4 pb-4">
-            <div class="p-4 bg-white rounded-2xl shadow-md mt-4">
-                <div class="border-b-4 border-green-700 pb-2 mb-2">
-                    <p class="text-2xl text-green-700 font-bold">Create Tournament</p>
+            <div class="bg-white rounded-2xl shadow-md mt-4">
+                <div class="border-b-4 border-green-700 py-2 mb-2 px-4">
+                    <p class="text-2xl text-green-700 font-bold">Tournament</p>
                 </div>
 
                 @if ($errors->any())
@@ -34,76 +20,77 @@
                     </div>
                 @endif
 
-                @if (session('noError'))
-                    <div class="grid grid-cols-2 gap-4 py-4 px-6 border border-red-300 bg-red-100 rounded-lg">
-                        <ul class="list-disc">
-                            <li class="text-red-700 text-xs">{{ session('noError') }}</li>
-                        </ul>
+                <div class="w-full flex items-center justify-end px-4 pt-3">
+                    <a class="bg-green-700 rounded-lg shadow text-white px-4 py-2 cursor-pointer" href="{{ route('tournament.create') }}">Add Tournament</a>
+                </div>
+
+                <div class="w-full p-4">
+                    <div class="rounded-box border border-green-700 bg-base-100 mb-4">
+                        <table class="table text-center">
+                            <!-- head -->
+                            <thead>
+                                <tr class="text-white">
+                                    <th class="bg-green-700 text-white rounded-tl-lg">NO</th>
+                                    <th class="bg-green-700">NAME</th>
+                                    <th class="bg-green-700">START DATE</th>
+                                    <th class="bg-green-700">ROUND</th>
+                                    <th class="bg-green-700">COURSE</th>
+                                    <th class="bg-green-700">STATUS</th>
+                                    <th class="bg-green-700">ORGANIZER</th>
+                                    <th class="bg-green-700 text-white rounded-tr-lg">ACTION</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($tournaments as $key => $item)
+                                    <tr>
+                                        <td class="border border-green-700/50 w-20">{{ $tournaments->firstItem() + $key }}</td>
+                                        <td class="border border-green-700/50">{{ $item->name }}</td>
+                                        <td class="border border-green-700/50">{{ $item->date_start }}</td>
+                                        <td class="border border-green-700/50">{{ $item->round }}</td>
+                                        <td class="border border-green-700/50">{{ $item->course->name ?? '' }}</td>
+                                        <td class="border border-green-700/50">
+                                            @if ($item->status == 'created')
+                                                <span class="py-2 px-4 rounded-lg bg-yellow-500 text-white">{{ strtoupper($item->status ?? '') }}</span>
+                                            @elseif ($item->status == 'active')
+                                                <span class="py-2 px-4 rounded-lg bg-green-700 text-white">{{ strtoupper($item->status ?? '') }}</span>
+                                            @elseif ($item->status == 'finish')
+                                                <span class="py-2 px-4 rounded-lg bg-red-700 text-white">{{ strtoupper($item->status ?? '') }}</span>
+                                            @endif
+                                        </td>
+                                        <td class="border border-green-700/50">{{ ucwords($item->organizer ?? '') }}</td>
+                                        <td class="border border-green-700/50">
+
+                                            <div class="dropdown dropdown-end">
+                                                <div class="m-1 cursor-pointer hover:bg-green-700 rounded-lg" role="button" tabindex="0">
+                                                    <div class="flex items-center justify-center gap-1 p-2">
+                                                        <div class="w-2 h-2 rounded-full bg-black"></div>
+                                                        <div class="w-2 h-2 rounded-full bg-black"></div>
+                                                        <div class="w-2 h-2 rounded-full bg-black"></div>
+                                                    </div>
+                                                </div>
+                                                <ul class="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-[0px_0px_4px_0px_rgba(0,0,0,0.2)]" tabindex="-1">
+                                                    <li><a href="{{ route('tournament.edit', $item->id) }}">Edit</a></li>
+                                                    <li><a href="{{ route('tournament.active', $item->id) }}">Activate</a></li>
+                                                    <li>
+                                                        <form class="w-full h-full inline-block relative" action="{{ route('tournament.destroy', $item->id) }}" method="POST">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button class="inline-block w-full h-full text-left cursor-pointer" type="submit">Delete</button>
+                                                        </form>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
                     </div>
-                @endif
-
-                <div class="grid grid-cols-2 gap-x-32 gap-y-2 pb-4">
-                    <fieldset class="fieldset">
-                        <legend class="fieldset-legend">Tournament Name<span class="text-red-700">*</span></legend>
-                        <input class="input rounded-xl w-full" name="name" type="text" placeholder="Type here" />
-                    </fieldset>
-                    <fieldset class="fieldset">
-                        <legend class="fieldset-legend">Organizer<span class="text-red-700">*</span></legend>
-                        <input class="input rounded-xl w-full" name="organizer" type="text" placeholder="Type here" />
-                    </fieldset>
-
-                    <div class="grid grid-cols-2 gap-x-4">
-                        <fieldset class="fieldset">
-                            <legend class="fieldset-legend">Location <span class="text-red-700">*</span></legend>
-                            <select class="select rounded-xl w-full" name="location">
-                                <option disabled selected>Pick Location</option>
-                                <option value="bandung">Bandung</option>
-                                <option value="bogor">Bogor</option>
-                                <option value="jakarta">Jakarta</option>
-                            </select>
-                        </fieldset>
-                        <fieldset class="fieldset">
-                            <legend class="fieldset-legend">Timezone <span class="text-red-700">*</span></legend>
-                            <select class="select rounded-xl w-full" name="timezone">
-                                <option disabled selected>Pick Timezone</option>
-                                <option value="Asia/Jakarta">WIB</option>
-                                <option value="Asia/Makassar">WITA</option>
-                                <option value="Asia/Jayapura">WIT</option>
-                            </select>
-                        </fieldset>
-                    </div>
-
-                    <fieldset class="fieldset">
-                        <legend class="fieldset-legend">Select Course <span class="text-red-700">*</span></legend>
-                        <select class="select rounded-xl w-full" name="course_id">
-                            <option disabled selected>Pick Course</option>
-                            @foreach ($courses as $course)
-                                <option value="{{ $course->id }}">{{ $course->name }}</option>
-                            @endforeach
-                        </select>
-                    </fieldset>
-
-                    <fieldset class="fieldset">
-                        <legend class="fieldset-legend">Start Date <span class="text-red-700">*</span></legend>
-                        <input class="input pika-single rounded-xl w-full" id="date_start" name="date_start" type="text">
-                    </fieldset>
-                    <fieldset class="fieldset">
-                        <legend class="fieldset-legend">Round <span class="text-red-700">*</span></legend>
-                        <select class="select rounded-xl w-full" name="round">
-                            <option class="italic" disabled selected>Pick Round</option>
-                            <option value="1">1</option>
-                            <option value="2">2</option>
-                            <option value="3">3</option>
-                            <option value="4">4</option>
-                        </select>
-                    </fieldset>
-
+                    {{ $tournaments->links() }}
                 </div>
             </div>
 
-            <div class="w-full p-4 flex items-center justify-center mt-4">
-                <button class="bg-green-700 rounded-lg shadow text-white px-4 py-2 cursor-pointer">Create</button>
-            </div>
         </div>
-    </form>
+
+    </div>
 @endsection

@@ -10,6 +10,26 @@
             <p class="text-lg mb-10">Sign in to use the golf timer Access your personalized golf sessions and keep track.</p>
             <form class="space-y-4" action="{{ route('authenticate') }}" method="POST">
                 @csrf
+                <div class="flex items-center justify-center mb-6">
+                    <label class="flex items-center justify-center cursor-pointer w-full">
+                        <!-- Toggle Container -->
+                        <div class="relative w-full">
+                            <!-- Input Checkbox -->
+                            <input class="sr-only" id="section-toggle" name="section" type="checkbox" value="referee" onchange="toggleLabel()">
+                            <!-- Background -->
+                            <div class="bg-gray-200 w-full h-10 rounded-full shadow-inner"></div>
+                            <!-- Dot (moving part) -->
+                            <div class="dot absolute left-1 top-1 bg-green-700 w-1/2 h-8 rounded-full transition-transform duration-300 flex items-center justify-center shadow-sm">
+                                <span class="text-sm font-semibold text-gray-700" id="toggle-text"></span>
+                            </div>
+                            <!-- Labels inside the track for visual cue -->
+                            <div class="absolute inset-0 flex items-center justify-between pointer-events-none text-sm text-gray-500 tracking-wider">
+                                <span class="w-1/2 text-center" id="dashboard-label">Dashboard</span>
+                                <span class="w-1/2 text-center" id="referee-label">Referee Timer</span>
+                            </div>
+                        </div>
+                    </label>
+                </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700" for="username">Username</label>
                     <input class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 placeholder:text-gray-400" id="username" name="username" type="text" required placeholder="Username">
@@ -60,4 +80,31 @@
             <img class="h-full object-contain w-full" src="{{ asset('img/login-banner-cp.png') }}" alt="">
         </div>
     </div>
+
+    <script>
+        function toggleLabel() {
+            const checkbox = document.getElementById('section-toggle');
+            const dashboardLabel = document.getElementById('dashboard-label');
+            const refereeLabel = document.getElementById('referee-label');
+            const dot = document.querySelector('.dot');
+
+            if (checkbox.checked) {
+                dashboardLabel.classList.remove('text-white');
+                dashboardLabel.classList.add('text-gray-500');
+                refereeLabel.classList.remove('text-gray-500');
+                refereeLabel.classList.add('text-white');
+                // Adjusting pixel value for smoother transition instead of rough percentages
+                dot.style.transform = 'translateX(95.5%)';
+            } else {
+                dashboardLabel.classList.remove('text-gray-500');
+                dashboardLabel.classList.add('text-white');
+                refereeLabel.classList.remove('text-white');
+                refereeLabel.classList.add('text-gray-500');
+                dot.style.transform = 'translateX(0)';
+                dot.classList.remove('translate-x-full');
+            }
+        }
+
+        toggleLabel(); // Initialize the toggle state on page load
+    </script>
 @endsection

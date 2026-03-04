@@ -38,9 +38,9 @@ class CourseController extends Controller
         $course->holes()->createMany(
             collect($request->holes)->map(function ($holeData, $index) {
                 return [
-                    'number' => $index + 1,
+                    'number' => $index,
                     'par' => $holeData['par'],
-                    'allowed_time' => $holeData['allowed_time'],
+                    'allowed_time' => '00:' . str_pad($holeData['allowed_time'], 2, '0', STR_PAD_LEFT) . ':00',
                 ];
             })->toArray()
         );

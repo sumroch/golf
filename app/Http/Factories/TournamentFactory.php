@@ -8,22 +8,15 @@ class TournamentFactory
 {
     public static function get($data)
     {
-        $data->tee_area = json_decode($data->tee_area);
 
         $data->start_interval_hour = date('H', strtotime($data->start_interval));
         $data->start_interval_minute = date('i', strtotime($data->start_interval));
 
-        $data->morning_one_hour = date('H', strtotime($data->morning_one));
-        $data->morning_one_minute = date('i', strtotime($data->morning_one));
+        $data->morning_hour = date('H', strtotime($data->morning));
+        $data->morning_minute = date('i', strtotime($data->morning));
 
-        $data->morning_ten_hour = date('H', strtotime($data->morning_ten));
-        $data->morning_ten_minute = date('i', strtotime($data->morning_ten));
-
-        $data->afternoon_one_hour = date('H', strtotime($data->afternoon_one));
-        $data->afternoon_one_minute = date('i', strtotime($data->afternoon_one));
-
-        $data->afternoon_ten_hour = date('H', strtotime($data->afternoon_ten));
-        $data->afternoon_ten_minute = date('i', strtotime($data->afternoon_ten));
+        $data->afternoon_hour = date('H', strtotime($data->afternoon));
+        $data->afternoon_minute = date('i', strtotime($data->afternoon));
 
         $data->crossover_one_hour = date('H', strtotime($data->crossover_one));
         $data->crossover_one_minute = date('i', strtotime($data->crossover_one));
@@ -46,7 +39,6 @@ class TournamentFactory
             'course' => $data->tournament->course->name,
             'total_hole' => $data->tournament->course->total_holes,
             'status' => $data->status,
-            'tee_area' => count(json_decode($data->tee_area)) ? collect(json_decode($data->tee_area))->map(fn($value) => ucfirst($value))->values()->implode(', ') : '-',
             'ball' => $data->ball ? $data->ball . ' Balls' : '-',
             'transportation' =>  $data->transportation ? ucfirst($data->transportation) : '-',
             'groups' => $data->groups,

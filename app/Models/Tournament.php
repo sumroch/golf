@@ -17,7 +17,9 @@ class Tournament extends Model
         'organizer',
         'date_start',
         'round',
+        'timezone',
         'course_id',
+        'status',
     ];
 
     public function rounds()

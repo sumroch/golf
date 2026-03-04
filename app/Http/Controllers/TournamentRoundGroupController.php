@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Factories\TournamentFactory;
+use App\Http\Requests\UpdateGroupHoleRequest;
 use App\Http\Services\GenerateTournamentData;
 use App\Imports\GroupImport;
 use App\Models\TournamentHole;
@@ -45,6 +46,13 @@ class TournamentRoundGroupController extends Controller
         ]);
     }
 
+    public function downloadTemplate()
+    {
+        $path = asset('document/template.xlsx');
+
+        return response()->download($path);
+    }
+
     /**
      * Display the tournament group page.
      */
@@ -65,6 +73,10 @@ class TournamentRoundGroupController extends Controller
         }
 
         if ($tournamentRound->groups->count() > 0) {
+            $tournamentRound->groups->each(function ($group) {
+                $group->players()->delete();
+            });
+
             $tournamentRound->groups()->delete();
             $tournamentRound->tournamentPaces()->delete();
         }
@@ -83,7 +95,7 @@ class TournamentRoundGroupController extends Controller
         return redirect()->back();
     }
 
-    public function updateHole($round, Request $request)
+    public function updateHole($round, UpdateGroupHoleRequest $request)
     {
         $tournament = TournamentRound::find($round);
 

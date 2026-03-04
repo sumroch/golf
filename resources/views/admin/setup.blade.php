@@ -95,62 +95,40 @@
                 @endif
                 <div class="grid grid-cols-2 gap-x-32 gap-y-2">
                     <fieldset class="fieldset">
-                        <legend class="fieldset-legend">Teeing Area <span class="text-red-700">*</span></legend>
-                        <select class="select-tom rounded-xl w-full" name="tee_area[]" multiple placeholder="Select Tee Area" autocomplete="off" required>
-                            <option value="black" {{ in_array('black', $round->tee_area) ? 'selected' : '' }}>Black</option>
-                            <option value="blue" {{ in_array('blue', $round->tee_area) ? 'selected' : '' }}>Blue</option>
-                            <option value="white" {{ in_array('white', $round->tee_area) ? 'selected' : '' }}>White</option>
-                            <option value="red" {{ in_array('red', $round->tee_area) ? 'selected' : '' }}>Red</option>
-                            <option value="yellow" {{ in_array('yellow', $round->tee_area) ? 'selected' : '' }}>Yellow</option>
-                        </select>
-                    </fieldset>
-                    <fieldset class="fieldset">
                         <legend class="fieldset-legend">Start Interval <span class="text-red-700">*</span></legend>
                         <div class="grid grid-cols-2 gap-x-4">
                             <input class="input rounded-xl shadow w-full" name="start_interval_hour" type="text" value="{{ $round->start_interval_hour }}" placeholder="00" required />
                             <input class="input rounded-xl shadow w-full" name="start_interval_minute" type="text" value="{{ $round->start_interval_minute }}" placeholder="00" required />
                         </div>
                     </fieldset>
-
                     <fieldset class="fieldset">
-                        <legend class="fieldset-legend">Start Tee 1 Morning Session</legend>
-                        <div class="grid grid-cols-2 gap-4">
-                            <input class="input rounded-xl shadow w-full" name="morning_one_hour" type="text" value="{{ $round->morning_one_hour }}" placeholder="00" required />
-                            <input class="input rounded-xl shadow w-full" name="morning_one_minute" type="text" value="{{ $round->morning_one_minute }}" placeholder="00" required />
-                        </div>
-                    </fieldset>
-                    <fieldset class="fieldset">
-                        <legend class="fieldset-legend">Start Tee 10 Morning Session</legend>
-                        <div class="grid grid-cols-2 gap-4">
-                            <input class="input rounded-xl shadow w-full" name="morning_ten_hour" type="text" value="{{ $round->morning_ten_hour }}" placeholder="00" required />
-                            <input class="input rounded-xl shadow w-full" name="morning_ten_minute" type="text" value="{{ $round->morning_ten_minute }}" placeholder="00" required />
-                        </div>
                     </fieldset>
 
                     <fieldset class="fieldset">
-                        <legend class="fieldset-legend">Start Tee 1 Afternoon Session</legend>
+                        <legend class="fieldset-legend">Start Morning Session</legend>
                         <div class="grid grid-cols-2 gap-4">
-                            <input class="input rounded-xl shadow w-full" name="afternoon_one_hour" type="text" value="{{ $round->afternoon_one_hour }}" placeholder="00" required />
-                            <input class="input rounded-xl shadow w-full" name="afternoon_one_minute" type="text" value="{{ $round->afternoon_one_minute }}" placeholder="00" required />
+                            <input class="input rounded-xl shadow w-full" name="morning_hour" type="text" value="{{ $round->morning_hour }}" placeholder="00" required />
+                            <input class="input rounded-xl shadow w-full" name="morning_minute" type="text" value="{{ $round->morning_minute }}" placeholder="00" required />
                         </div>
                     </fieldset>
+                    
                     <fieldset class="fieldset">
-                        <legend class="fieldset-legend">Start Tee 10 Afternoon Session</legend>
+                        <legend class="fieldset-legend">Start Afternoon Session</legend>
                         <div class="grid grid-cols-2 gap-4">
-                            <input class="input rounded-xl shadow w-full" name="afternoon_ten_hour" type="text" value="{{ $round->afternoon_ten_hour }}" placeholder="00" required />
-                            <input class="input rounded-xl shadow w-full" name="afternoon_ten_minute" type="text" value="{{ $round->afternoon_ten_minute }}" placeholder="00" required />
+                            <input class="input rounded-xl shadow w-full" name="afternoon_hour" type="text" value="{{ $round->afternoon_hour }}" placeholder="00" required />
+                            <input class="input rounded-xl shadow w-full" name="afternoon_minute" type="text" value="{{ $round->afternoon_minute }}" placeholder="00" required />
                         </div>
                     </fieldset>
 
                     <fieldset class="fieldset">
-                        <legend class="fieldset-legend">Cross Over Allowed 9-10</legend>
+                        <legend class="fieldset-legend">Cross Over Hole 9 to 10</legend>
                         <div class="grid grid-cols-2 gap-4">
                             <input class="input rounded-xl shadow w-full" name="crossover_one_hour" type="text" value="{{ $round->crossover_one_hour }}" placeholder="00" required />
                             <input class="input rounded-xl shadow w-full" name="crossover_one_minute" type="text" value="{{ $round->crossover_one_minute }}" placeholder="00" required />
                         </div>
                     </fieldset>
                     <fieldset class="fieldset">
-                        <legend class="fieldset-legend">Cross Over Allowed 18-1</legend>
+                        <legend class="fieldset-legend">Cross Over Hole 18 to 1</legend>
                         <div class="grid grid-cols-2 gap-4">
                             <input class="input rounded-xl shadow w-full" name="crossover_ten_hour" type="text" value="{{ $round->crossover_ten_hour }}" placeholder="00" required />
                             <input class="input rounded-xl shadow w-full" name="crossover_ten_minute" type="text" value="{{ $round->crossover_ten_minute }}" placeholder="00" required />

@@ -12,12 +12,9 @@ class TournamentRound extends Model
     
     protected $table = 'tournament_rounds';
     protected $fillable = [
-        'tee_area',
         'start_interval',
-        'morning_one',
-        'morning_ten',
-        'afternoon_one',
-        'afternoon_ten',
+        'morning',
+        'afternoon',
         'crossover_one',
         'crossover_ten',
         'ball',

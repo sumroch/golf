@@ -24,11 +24,18 @@ class StoreCourseRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:128'],
             'location' => ['required', 'string', 'max:64'],
-            'par' => ['required', 'numeric', 'max:50'],
+            'par' => ['required', 'numeric', 'in:70,71,72'],
             'total_holes' => ['required', 'numeric', 'max:20'],
             'holes' => ['required', 'array'],
-            'holes.*.par' => ['required', 'numeric', 'max:50'],
+            'holes.*.par' => ['required', 'numeric', 'in:3,4,5'],
             'holes.*.allowed_time' => ['required', 'numeric', 'max:60'],
         ];
+    }
+
+    protected function prepareForValidation()
+    {
+        $this->merge([
+            'total_holes' => 18,
+        ]);
     }
 }

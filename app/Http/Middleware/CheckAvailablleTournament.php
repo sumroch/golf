@@ -16,10 +16,10 @@ class CheckAvailablleTournament
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $check = Tournament::where('status', '!=', 'finish')->first();
+        $check = Tournament::where('status', 'active')->first();
 
         if (!$check) {
-            return redirect()->route('tournament.index')->with('noError', 'No active tournament available. Please create a new tournament.');
+            return redirect()->route('tournament.index')->with('noError', 'No active tournament available. Please activate an existing tournament or create a new tournament.');
         }
 
         return $next($request);

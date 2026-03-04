@@ -18,7 +18,8 @@ return new class extends Migration
             $table->string('organizer', 128);
             $table->date('date_start');
             $table->unsignedSmallInteger('round')->default(0);
-            $table->enum('status', ['created', 'active', 'finish'])->default('created');
+            $table->string('timezone')->default('Asia/Jakarta');
+            $table->enum('status', ['created', 'setup', 'active', 'finish'])->default('created');
 
             $table->foreignId('course_id')->constrained('courses')->onDelete('cascade');
             $table->timestamps();
