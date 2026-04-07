@@ -68,22 +68,21 @@ class MobileController extends Controller
     {
         $pace = TournamentPace::where('id', $id)->first();
 
-        $holes = $mobileService->getRefereObserver($request->user()->id, $pace->tournament_round_id);
-        $holeIds = $holes->pluck('observer_id')->toArray();
+        $observers = $mobileService->getRefereObserver($request->user()->id, $pace->tournament_round_id);
 
-        if (!in_array($pace->hole_id, $holeIds) && !in_array($pace->group_id, $holeIds)) {
-            return response()->json(['message' => 'Not Found'], 404);
-        }
+        if ($mobileService->checkObserverIsValid($observers, $pace)) {
 
-        if ($pace && !in_array($pace->status, ['finish', 'unmonitored'])) {
             $pace->update([
                 'status' => 'finish',
                 'finish_at' => now(),
             ]);
 
-            return response()->json([
-                'data' => $pace,
-            ]);
+            $mobileService->actionObserver(
+                $mobileService->getListObserverReverse($observers, $pace),
+                $pace
+            );
+
+            return response()->json(['data' => $pace]);
         }
 
         return response()->json(['message' => 'Not Found'], 404);
@@ -92,15 +91,9 @@ class MobileController extends Controller
     public function unmonitored($id, Request $request, MobileService $mobileService)
     {
         $pace = TournamentPace::where('id', $id)->first();
+        $observers = $mobileService->getRefereObserver($request->user()->id, $pace->tournament_round_id);
 
-        $holes = $mobileService->getRefereObserver($request->user()->id, $pace->tournament_round_id);
-        $holeIds = $holes->pluck('observer_id')->toArray();
-
-        if (!in_array($pace->hole_id, $holeIds) && !in_array($pace->group_id, $holeIds)) {
-            return response()->json(['message' => 'Not Found'], 404);
-        }
-
-        if ($pace && !in_array($pace->status, ['finish', 'unmonitored'])) {
+        if ($mobileService->checkObserverIsValid($observers, $pace)) {
             $pace->update([
                 'status' => 'unmonitored',
             ]);
@@ -113,19 +106,9 @@ class MobileController extends Controller
         return response()->json(['message' => 'Not Found'], 404);
     }
 
-    public function showMember($id, Request $request, MobileService $mobileService)
+    public function showMember($observer, Request $request, MobileService $mobileService)
     {
-        $duty = TournamentRefereeDuty::where('id', $id)
-            ->whereHas('round', function ($query) {
-                $query->whereIn('status', ['active', 'pause'])
-                    ->whereHas('tournament', function ($query) {
-                        $query->where('status', 'active');
-                    });
-            })
-            ->when($request->user()->hasRole(['referee', 'observer']), function ($query) use ($request) {
-                $query->where('user_id', $request->user()->id);
-            })
-            ->first();
+        $duty = $mobileService->getUserDuties($observer, $request->user());
 
         if (!$duty)
             return response()->json(['message' => 'Not Found'], 404);

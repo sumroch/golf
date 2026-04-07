@@ -8,7 +8,7 @@
             @csrf
             <div class="p-4 bg-white rounded-2xl shadow-md mt-4">
                 <div class="border-b-4 border-green-700 pb-2 mb-2">
-                    <p class="text-2xl text-green-700 font-bold">Course & Holes</p>
+                    <p class="text-2xl text-green-700 font-bold px-6">Course & Holes</p>
                 </div>
 
                 @if ($errors->any())
@@ -21,7 +21,7 @@
                     </div>
                 @endif
 
-                <div class="w-full grid grid-cols-2 gap-6 px-6 mb-6">
+                <div class="w-full grid grid-cols-1 sm:grid-cols-2 gap-6 px-6 mb-6">
                     <fieldset class="fieldset w-full">
                         <legend class="fieldset-legend">Course Name <span class="text-red-700">*</span></legend>
                         <input class="input rounded-xl w-full placeholder:text-gray-500 placeholder:italic" name="name" type="text" value="{{ old('name') }}" required placeholder="Course Name" />
@@ -58,7 +58,7 @@
                     </fieldset>
                 </div>
 
-                <div class="w-full grid grid-cols-4 gap-6 px-6 pb-2">
+                <div class="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-6 pb-2">
                     @foreach (range(1, 18) as $item)
                         <div class="rounded-2xl bg-white shadow-[0px_0px_4px_0px_rgba(0,0,0,0.2)] relative">
                             <div class="bg-neutral-100 rounded-t-2xl">

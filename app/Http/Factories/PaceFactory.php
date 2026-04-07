@@ -80,15 +80,14 @@ class PaceFactory
                             $pace->progress_class = 'bg-gray-300/50';
                         }
 
-                        if ($pace->status == 'unmonitored') {
-                            $pace->progress_class = 'bg-red-700';
-                            $pace->progress = 'unmonitored';
-                        }
-
                         $now = Carbon::now()->timezone('Asia/Jakarta');
 
                         if ($allow->diffInMinutes($now, false) > -10 && $allow->diffInMinutes($now, false) < 10) {
                             $pace->progress_class = 'bg-red-200 text-red-800';
+                        }
+
+                        if ($pace->status == 'unmonitored') {
+                            $pace->progress_class = 'bg-red-700';
                         }
 
                         $pace->time = Carbon::parse($pace->time)->format('H:i');

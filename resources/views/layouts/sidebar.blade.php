@@ -73,16 +73,31 @@
                     </ul>
                 </details>
 
-                <details class="mt-4" {{ request()->is('admin/grandmaster*') ? 'open' : '' }}>
+                <details class="mt-4" {{ request()->is('admin/grandmaster/course*') ? 'open' : '' }}>
                     <summary class="text-green-600 font-bold">
                         <img class="h-8 w-8 me-4" src="{{ asset('img/icon/user.svg') }}" alt="">
-                        <span>Superadmin</span>
+                        <span>Admin</span>
                     </summary>
                     <ul>
                         <li class="py-2">
                             <a class="{{ request()->is('admin/grandmaster/course*') ? 'bg-green-600 text-white' : '' }}" href="{{ route('course.index') }}">
                                 <img class="h-8 w-8 me-4" src="{{ asset('img/icon/setup.svg') }}" alt="">
                                 <span>Courses & Holes</span>
+                            </a>
+                        </li>
+                    </ul>
+                </details>
+
+                <details class="mt-4" {{ request()->is('admin/grandmaster/setting*') ? 'open' : '' }}>
+                    <summary class="text-green-600 font-bold">
+                        <img class="h-8 w-8 me-4" src="{{ asset('img/icon/user.svg') }}" alt="">
+                        <span>Superadmin</span>
+                    </summary>
+                    <ul>
+                        <li class="py-2">
+                            <a class="{{ request()->is('admin/grandmaster/setting*') ? 'bg-green-600 text-white' : '' }}" href="{{ route('setting.index') }}">
+                                <img class="h-8 w-8 me-4" src="{{ asset('img/icon/setup.svg') }}" alt="">
+                                <span>Setting</span>
                             </a>
                         </li>
                     </ul>

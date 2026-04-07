@@ -15,7 +15,7 @@ class TournamentController extends Controller
      */
     public function index()
     {
-        return view('admin.master.tournament', [
+        return view('admin.master.tournament.index', [
             'tournaments' => Tournament::select('id', 'name', 'location', 'organizer', 'date_start', 'round', 'course_id', 'status')
                 ->with('course')
                 ->orderBy('id', 'asc')
@@ -28,7 +28,7 @@ class TournamentController extends Controller
      */
     public function create()
     {
-        return view('admin.master.tournament-create', [
+        return view('admin.master.tournament.create', [
             'courses' => Course::orderBy('name', 'asc')->get(),
         ]);
     }
@@ -40,6 +40,10 @@ class TournamentController extends Controller
     {
         $tournament = Tournament::findOrFail($tournament);
         $tournament->update(['status' => 'active']);
+
+        Tournament::where('id', '!=', $tournament->id)
+            ->where('status', 'active')
+            ->update(['status' => 'hold']);
 
         return redirect()->back();
     }
@@ -70,7 +74,7 @@ class TournamentController extends Controller
      */
     public function edit($tournament)
     {
-        return view('admin.master.tournament-edit', [
+        return view('admin.master.tournament.edit', [
             'courses' => Course::orderBy('name', 'asc')->get(),
             'tournament' => Tournament::findOrFail($tournament),
         ]);

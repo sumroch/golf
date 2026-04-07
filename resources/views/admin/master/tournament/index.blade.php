@@ -41,6 +41,12 @@
                                 </tr>
                             </thead>
                             <tbody>
+                                @if ($tournaments->isEmpty())
+                                    <tr>
+                                        <td colspan="8" class="border border-green-700/50">No data available</td>
+                                    </tr>
+                                @endif
+
                                 @foreach ($tournaments as $key => $item)
                                     <tr>
                                         <td class="border border-green-700/50 w-20">{{ $tournaments->firstItem() + $key }}</td>
@@ -53,6 +59,8 @@
                                                 <span class="py-2 px-4 rounded-lg bg-yellow-500 text-white">{{ strtoupper($item->status ?? '') }}</span>
                                             @elseif ($item->status == 'active')
                                                 <span class="py-2 px-4 rounded-lg bg-green-700 text-white">{{ strtoupper($item->status ?? '') }}</span>
+                                            @elseif ($item->status == 'hold')
+                                                <span class="py-2 px-4 rounded-lg bg-gray-700 text-white">{{ strtoupper($item->status ?? '') }}</span>
                                             @elseif ($item->status == 'finish')
                                                 <span class="py-2 px-4 rounded-lg bg-red-700 text-white">{{ strtoupper($item->status ?? '') }}</span>
                                             @endif

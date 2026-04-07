@@ -201,22 +201,31 @@
                                 <p>Target Time</p>
                                 <p class="font-bold" v-text="item.time"></p>
                             </div>
-                            <div class="flex items-center justify-between mt-2" v-if="item.progress == 'ontime'">
-                                <p class="mb-0">Ontime</p>
-                                <p class="text-green-700 mb-0 font-bold" v-text="item.time_diff"></p>
+
+                            <div v-if="item.progress == 'ontime'">
+                                <div class="flex items-center justify-between mt-2">
+                                    <p class="mb-0">Time</p>
+                                    <p class="text-green-700 mb-0 font-bold" v-text="item.time_diff"></p>
+                                </div>
+                                <progress class="progress progress-success w-full" :value="item.time_percentage" max="100"></progress>
                             </div>
-                            <progress class="progress progress-success w-full" :value="item.time_percentage" max="100" v-if="item.progress == 'ontime'"></progress>
-                            <div class="flex items-center justify-between mt-2" v-else-if="item.progress == 'late'">
-                                <p class="mb-0">Ontime</p>
-                                <p class="text-yellow-700 mb-0 font-bold" v-text="item.time_diff"></p>
+
+                            <div v-else-if="item.progress == 'late'">
+                                <div class="flex items-center justify-between mt-2">
+                                    <p class="mb-0">Time</p>
+                                    <p class="text-yellow-700 mb-0 font-bold" v-text="item.time_diff"></p>
+                                </div>
+                                <progress class="progress progress-warning w-full" :value="item.time_percentage" max="100"></progress>
                             </div>
-                            <progress class="progress progress-warning w-full" :value="item.time_percentage" max="100" v-else-if="item.progress == 'late'"></progress>
-                            <div class="flex items-center justify-between mt-2" v-else>
-                                <p class="mb-0">Ontime</p>
-                                <p class="text-red-700 mb-0 font-bold" v-text="item.time_diff"></p>
+
+                            <div v-else>
+                                <div class="flex items-center justify-between mt-2">
+                                    <p class="mb-0">Time</p>
+                                    <p class="text-red-700 mb-0 font-bold" v-text="item.time_diff"></p>
+                                </div>
+                                <progress class="progress progress-error w-full" :value="item.time_percentage" max="100"></progress>
                             </div>
-                            <progress class="progress progress-error w-full" :value="item.time_percentage" max="100" v-else></progress>
-                            {{-- <p>{{ $item['time_percentage'] }}</p> --}}
+
                         </div>
                     </div>
                 </div>

@@ -19,7 +19,7 @@ return new class extends Migration
             $table->date('date_start');
             $table->unsignedSmallInteger('round')->default(0);
             $table->string('timezone')->default('Asia/Jakarta');
-            $table->enum('status', ['created', 'setup', 'active', 'finish'])->default('created');
+            $table->enum('status', ['created', 'setup', 'active', 'hold', 'finish'])->default('created');
 
             $table->foreignId('course_id')->constrained('courses')->onDelete('cascade');
             $table->timestamps();

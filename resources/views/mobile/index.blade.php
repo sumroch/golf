@@ -53,9 +53,11 @@
                     prevPaceDisable: true,
                     nextObserverDisable: false,
                     prevObserverDisable: true,
+                    oldObserverKey: 0,
                     member: [],
                     memberFirst: [],
                     memberSecond: [],
+                    collapseActive: false,
                 }
             },
             mounted() {
@@ -76,9 +78,14 @@
                             this.memberFirst = response.data.data.first;
                             this.memberSecond = response.data.data.second;
 
-                            if (!this.activePace?.id) {
-                                this.activePace = response.data.data.all[0];
-                            }
+                            this.oldObserverKey = this.activeObserverKey;
+
+                            // if (!this.activePace?.id || (this.activePace?.id && this.activeObserverKey != this.oldObserverKey)) {
+                                this.activePaceKey = this.findNextValidIndex(this.member, -1, 'next')
+                                this.activePace = response.data.data.all[this.activePaceKey];
+                            // } else {
+                                // this.activePace = response.data.data.all[this.activePaceKey];
+                            // }
 
                             this.preloader(false);
                         })
@@ -98,20 +105,30 @@
                     this.preloader(true);
 
                     let index = this.member.findIndex((item) => item.id == id);
+
+                    if (this.member[index].status === 'finish' || this.member[index].status === 'unmonitored') {
+                        this.preloader(false);
+                        return;
+                    }
+
                     this.activePace = this.member[index];
+                    this.activePaceKey = index;
 
                     setTimeout(() => {
                         this.preloader(false);
                     }, 300);
                 },
                 changeActiveObserverArrow(type = 'next') {
+
                     if (type === 'next') {
+
                         if (this.activeObserverKey + 1 <= this.observer.length - 1) {
                             this.activeObserverKey = this.activeObserverKey + 1;
                             this.activeObserver = this.observer[this.activeObserverKey]?.id;
                             this.activeObserverName = this.observer[this.activeObserverKey]?.name;
                         }
                     } else if (type === 'prev') {
+
                         if (this.activeObserverKey - 1 >= 0) {
                             this.activeObserverKey = this.activeObserverKey - 1;
                             this.activeObserver = this.observer[this.activeObserverKey]?.id;
@@ -125,23 +142,30 @@
                     this.getData();
                 },
                 changeActivePaceArrow(type = 'next') {
+                    let validIndex = this.findNextValidIndex(this.member, this.activePaceKey, type === 'next' ? 'next' : 'prev');
+
+                    if (validIndex == this.activePaceKey) {
+                        return;
+                    }
                     this.preloader(true);
 
-                    if (type === 'next') {
-                        if (this.activePaceKey + 1 <= this.member.length - 1) {
-                            this.activePaceKey = this.activePaceKey + 1;
-                            this.activePace = this.member[this.activePaceKey];
-                        }
-                    } else if (type === 'prev') {
-                        if (this.activePaceKey - 1 >= 0) {
-                            this.activePaceKey = this.activePaceKey - 1;
-                            this.activePace = this.member[this.activePaceKey];
-                        }
-                    }
+                    this.activePaceKey = validIndex;
+                    this.activePace = this.member[this.activePaceKey];
 
                     setTimeout(() => {
                         this.preloader(false);
                     }, 300);
+                },
+                findNextValidIndex(items, startIndex, direction = 'next') {
+                    let i = startIndex;
+
+                    while (true) {
+                        i += direction === 'next' ? 1 : -1;
+
+                        if (i < 0 || i >= items.length) return startIndex;
+
+                        if (items[i].status !== 'unmonitored' && items[i].status !== 'finish') return i;
+                    }
                 },
                 finishTimer() {
                     this.preloader(true);
@@ -152,12 +176,14 @@
                         })
                         .then(response => {
                             this.getData();
+                            this.changeActivePaceArrow('next');
                         })
                         .catch(error => {
                             this.preloader(false);
 
                             console.error('There was an error!', error);
                         });
+
                 },
                 unmonitoredTimer() {
                     this.preloader(true);
@@ -166,6 +192,7 @@
                         })
                         .then(response => {
                             this.getData();
+                            this.changeActivePaceArrow('next');
                         })
                         .catch(error => {
                             this.preloader(false);
@@ -176,6 +203,9 @@
                     if (document.querySelector('#loading-screen')) {
                         document.querySelector('#loading-screen').style.display = param ? 'flex' : 'none';
                     }
+                },
+                collapse() {
+                    this.collapseActive = !this.collapseActive;
                 }
             }
         });
@@ -277,44 +307,50 @@
 
             <section class="w-full flex items-end justify-around mb-12">
                 <div class="text-center">
-                    <button class="w-27 rounded-full border border-green-700 p-8 bg-white shadow-lg active:scale-95 hover:bg-green-100 transition cursor-pointer" onclick="my_modal_2.showModal()" v-if="activePace.status !== 'finish' && activePace.status !== 'unmonitored'">
+                    <button class="w-25 rounded-full border border-green-700 p-8 bg-white shadow-lg active:scale-95 hover:bg-green-100 transition cursor-pointer" onclick="my_modal_2.showModal()" v-if="activePace.status !== 'finish' && activePace.status !== 'unmonitored'">
                         <img class="w-full h-auto" src="{{ asset('img/flag.png') }}" alt="Play Button">
                     </button>
-                    <button class="w-27 rounded-full border border-gray-700 p-8 bg-gray-700 shadow-lg active:scale-95 transition cursor-pointer" v-else>
+                    <button class="w-25 rounded-full border border-gray-700 p-8 bg-gray-700 shadow-lg active:scale-95 transition cursor-pointer" v-else>
                         <img class="w-full h-auto" src="{{ asset('img/flag.png') }}" alt="Play Button">
                     </button>
                     <p class="mt-2">FINISH</p>
                 </div>
 
                 <div class="text-center">
-                    <button class="w-20 rounded-full p-6 bg-red-700 shadow-lg active:scale-95 hover:bg-green-100 transition cursor-pointer" v-on:click="unmonitoredTimer()" v-if="activePace.status !== 'finish' && activePace.status !== 'unmonitored'">
-                        <img class="w-full h-auto" src="{{ asset('img/unlink.png') }}" alt="Play Button">
-                    </button>
-                    <button class="w-20 rounded-full p-6 bg-gray-700 shadow-lg active:scale-95 transition cursor-pointer" v-else>
-                        <img class="w-full h-auto" src="{{ asset('img/unlink.png') }}" alt="Play Button">
-                    </button>
+                    <div class="w-fit inline-block">
+                        <button class="w-25 h-25 flex items-center justify-center rounded-full p-6 bg-red-700 shadow-lg active:scale-95 hover:bg-green-100 transition cursor-pointer" v-on:click="unmonitoredTimer()" v-if="activePace.status !== 'finish' && activePace.status !== 'unmonitored'">
+                            <img class="w-2/3 h-auto" src="{{ asset('img/unlink.png') }}" alt="Play Button">
+                        </button>
+                        <button class="w-25 h-25 flex items-center justify-center rounded-full p-6 bg-gray-700 shadow-lg active:scale-95 transition cursor-pointer" v-else>
+                            <img class="w-2/3 h-auto" src="{{ asset('img/unlink.png') }}" alt="Play Button">
+                        </button>
+                    </div>
                     <p class="mt-2 text-red-700">UNMONITORED</p>
                 </div>
             </section>
 
             <section class="w-full max-w-[500px] flex items-center justify-center flex-wrap bottom-0 absolute">
-                <div class="w-full collapse collapse-arrow rounded-none bg-base-100 border-base-300 border">
-                    <input type="checkbox" />
-                    <div class="collapse-title py-2 text-2xl rounded-none text-center font-bold text-white bg-green-700" v-text="activeObserverName"></div>
-                    <div class="collapse-content pb-0 text-sm px-0 row-start-2 col-start-1 max-h-45 overflow-auto">
+                <div class="w-full rounded-none bg-base-100 border-base-300 border">
+                    <div class="py-2 text-2xl rounded-none text-center font-bold text-white bg-green-700 relative" v-on:click="collapse">
+                        <span v-text="activeObserverName"></span>
+                        <svg class="h-10 w-10 fill-current md:h-8 md:w-8 cursor-pointer text-white absolute top-0 right-2 translate-y-1/4 rotate-90" :class="{ 'rotate-90': collapseActive, 'rotate-270': collapseActive }" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                            <path d="M15.41,16.58L10.83,12L15.41,7.41L14,6L8,12L14,18L15.41,16.58Z"></path>
+                        </svg>
+                    </div>
+                    <div class="pb-0 text-sm px-0 row-start-2 col-start-1 max-h-90 overflow-auto h-0 transition-all duration-300 ease-in-out transform" :class="{ 'h-90': collapseActive }">
                         <button class="w-full flex items-center justify-between py-3 px-4 border-bottom border-b border-gray-400 cursor-pointer" type="button" :class="{ 'bg-gray-300': item.id == activePace.id }" v-for="item in memberFirst" :key="item.id" v-on:click="changeActivePace(item.id)">
                             <p class="w-1/3 text-start" v-text="item.name"></p>
                             <p class="w-1/3" v-text="item.time"></p>
                             <p class="w-1/3 text-end" :class="{ 'text-green-700': item.progress == 'ontime', 'text-red-700': item.progress == 'late' }" v-text="item.finish_time"></p>
                             <p class="w-1/3 text-end" :class="{ 'text-green-700': item.progress == 'ontime', 'text-red-700': item.progress == 'late' }" v-if="item.status !=='unmonitored'" v-text="item.time_diff"></p>
-                            <p class="w-1/3 text-end text-red-700" v-else>UNMONITORED</p>
+                            <p class="w-1/3 text-end text-xs text-red-700" v-else>UNMONITORED</p>
                         </button>
                         <button class="w-full flex items-center justify-between py-3 px-4 border-bottom border-b border-gray-400 cursor-pointer" type="button" :class="{ 'bg-gray-300': item.id == activePace.id }" v-for="item in memberSecond" :key="item.id" v-on:click="changeActivePace(item.id)">
                             <p class="w-1/3 text-start" v-text="item.name"></p>
                             <p class="w-1/3" v-text="item.time"></p>
                             <p class="w-1/3 text-end" :class="{ 'text-green-700': item.progress == 'ontime', 'text-red-700': item.progress == 'late' }" v-text="item.finish_time"></p>
                             <p class="w-1/3 text-end" :class="{ 'text-green-700': item.progress == 'ontime', 'text-red-700': item.progress == 'late' }" v-if="item.status !=='unmonitored'" v-text="item.time_diff"></p>
-                            <p class="w-1/3 text-end text-red-700" v-else>UNMONITORED</p>
+                            <p class="w-1/3 text-end text-xs text-red-700" v-else>UNMONITORED</p>
                         </button>
                     </div>
                     <div class="collapse-content pb-0 text-sm px-0 row-start-3 col-start-1">

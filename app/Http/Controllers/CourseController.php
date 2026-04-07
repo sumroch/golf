@@ -15,7 +15,7 @@ class CourseController extends Controller
      */
     public function index()
     {
-        return view('admin.grandmaster.course', [
+        return view('admin.master.course.index', [
             'courses' => Course::orderBy('name', 'asc')->paginate(10),
         ]);
     }
@@ -25,7 +25,7 @@ class CourseController extends Controller
      */
     public function create(Request $request)
     {
-        return view('admin.grandmaster.course-create');
+        return view('admin.master.course.create');
     }
 
     /**
@@ -60,7 +60,7 @@ class CourseController extends Controller
             return $hole;
         });
 
-        return view('admin.grandmaster.course-show', [
+        return view('admin.master.course.show', [
             'data' => $course,
             'holes' => $course->holes
         ]);

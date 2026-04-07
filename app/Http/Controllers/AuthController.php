@@ -18,7 +18,9 @@ class AuthController extends Controller
                 return redirect()->route('referee');
 
             if ($checkTournament->exist())
-                return redirect()->route('dashboard', ['round' => $checkTournament->roundActiveId()]);
+                return $checkTournament->roundActiveId()
+                    ? redirect()->route('dashboard', ['round' => $checkTournament->roundActiveId()])
+                    : redirect()->route('tournament.index');
 
             return redirect()->route('tournament.index');
         }
@@ -50,7 +52,9 @@ class AuthController extends Controller
                 return redirect()->route('referee');
 
             if ($checkTournament->exist())
-                return redirect()->route('dashboard', ['round' => $checkTournament->roundActiveId()]);
+                return $checkTournament->roundActiveId()
+                    ? redirect()->route('dashboard', ['round' => $checkTournament->roundActiveId()])
+                    : redirect()->route('tournament.index');
 
             return redirect()->route('tournament.index');
         }
