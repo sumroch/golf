@@ -10,6 +10,7 @@ use App\Http\Controllers\TournamentRoundActionController;
 use App\Http\Controllers\TournamentRoundController;
 use App\Http\Controllers\TournamentRoundPaceController;
 use App\Http\Controllers\TournamentRoundGroupController;
+use App\Http\Controllers\MobileAllAccessController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [AuthController::class, 'login'])->name('login');
@@ -26,13 +27,17 @@ Route::middleware(['auth', 'lock_system'])->group(function () {
     Route::get('/referee', [MobileController::class, 'index'])->name('referee');
     Route::get('/referee/{observer}', [MobileController::class, 'showMember'])->name('referee.observer');
     Route::post('/referee/{id}/finish', [MobileController::class, 'finish'])->name('referee.finish');
-    // Route::post('/referee/{observer}/finish/{id}', [MobileController::class, 'finishWithObserver'])->name('referee.finish.observer');
     Route::post('/referee/{id}/unmonitored', [MobileController::class, 'unmonitored'])->name('referee.unmonitored');
+
+    Route::get('/access', [MobileAllAccessController::class, 'index'])->name('access');
+    Route::get('/access/{observer}', [MobileAllAccessController::class, 'showMember'])->name('access.observer');
+    Route::post('/access/{id}/finish', [MobileAllAccessController::class, 'finish'])->name('access.finish');
+    Route::post('/access/{id}/unmonitored', [MobileAllAccessController::class, 'unmonitored'])->name('access.unmonitored');
 
     Route::get('/change-language/{lang}', [AuthController::class, 'changeLanguage'])->name('change-language');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-    Route::middleware(['role:superadmin|admin|technician|director'])->prefix('admin')->group(function () {
+    Route::middleware(['role:superadmin|admin|technician|director|chief'])->prefix('admin')->group(function () {
         Route::middleware('check_tournament')->group(function () {
             Route::get('/group/template-download', [TournamentRoundGroupController::class, 'downloadTemplate'])->name('round.group.template-download');
     

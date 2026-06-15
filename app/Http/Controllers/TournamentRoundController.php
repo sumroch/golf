@@ -26,18 +26,19 @@ class TournamentRoundController extends Controller
             return view('admin.dashboard');
         }
 
-        $tournamentRound = TournamentRound::where('id', $round)
+        $tournamentRound = TournamentRound::whereHas('tournament', fn($x) => $x->where('status', 'active'))
+            ->where('id', $round)
             ->with(['groups.players', 'tournament.course', 'tournament.rounds'])
             ->first();
 
-        $tournamentByHole = $paceService->getPacesByHoles($round, $request->input('session', 'morning'));
+        $tournamentByHole = $paceService->getPacesByHoles($round, $request->input('session'), $request->input('history', 'hole'));
         $tournamentByTee = $paceService->getPacesByTee($round, $request->input('tee'));
 
         return $this->apiResponseSuccess(
             [
                 'round' => TournamentFactory::dashboard($tournamentRound),
-                'holes' => PaceFactory::byHole($tournamentByHole),
-                'tees' => PaceFactory::byTee($tournamentByTee),
+                'holes' => $request->history == 'hole' ? PaceFactory::byHole($tournamentByHole) : PaceFactory::byGroup($tournamentByHole),
+                'tees' => in_array($tournamentRound->status, ['finish', 'active', 'pause']) ? PaceFactory::byTee($tournamentByTee) : [],
                 'updated_at' => now()->timezone($tournamentRound->tournament->timezone)->format('Y-m-d H:i'),
             ]
         );
@@ -48,7 +49,7 @@ class TournamentRoundController extends Controller
      */
     public function dashboardTable($round, PaceService $paceService)
     {
-        $tournamentRound = TournamentRound::where('id', $round)->with(['groups.players', 'tournament.course', 'tournament.rounds'])->first();
+        $tournamentRound = TournamentRound::whereHas('tournament', fn($x) => $x->where('status', 'active'))->where('id', $round)->with(['groups.players', 'tournament.course', 'tournament.rounds'])->first();
 
         $holes = $paceService->holeType($tournamentRound->tournament->course_id, $round);
 
@@ -58,7 +59,7 @@ class TournamentRoundController extends Controller
             'tee_ten' => $holes[10],
             'total_one' => $holes['total_one'],
             'total_ten' => $holes['total_ten'],
-            'paces' => PaceFactory::callWithDetail($paceService->getCurrentTournamentPace($round)),
+            'paces' => PaceFactory::callWithDetail($paceService->getCurrentTournamentPace($round), $tournamentRound->type),
         ]);
     }
 
@@ -68,6 +69,7 @@ class TournamentRoundController extends Controller
     public function dashboardTablePrint($round, PaceService $paceService)
     {
         $tournamentRound = TournamentRound::where('id', $round)
+            ->whereHas('tournament', fn($x) => $x->where('status', 'active'))
             ->with(['groups.players', 'tournament.course', 'tournament.rounds'])
             ->first();
 
@@ -79,7 +81,7 @@ class TournamentRoundController extends Controller
             'tee_ten' => $holes[10],
             'total_one' => $holes['total_one'],
             'total_ten' => $holes['total_ten'],
-            'paces' => PaceFactory::callWithDetail($paceService->getCurrentTournamentPace($round)),
+            'paces' => PaceFactory::callWithDetail($paceService->getCurrentTournamentPace($round), $tournamentRound->type),
         ]);
     }
 
@@ -98,8 +100,8 @@ class TournamentRoundController extends Controller
      */
     public function storeSetup($round, UpdateTournamentRoundRequest $request)
     {
-        $tournament = TournamentRound::findOrFail($round);
-        $reqs = $request->only(['start_interval', 'morning', 'afternoon', 'crossover_one', 'crossover_ten', 'ball', 'transportation', 'timezone']);
+        $tournament = TournamentRound::whereHas('tournament', fn($x) => $x->where('status', 'active'))->findOrFail($round);
+        $reqs = $request->only(['start_interval', 'morning', 'afternoon', 'crossover_one', 'crossover_ten', 'ball', 'transportation', 'timezone', 'type']);
 
         if ($tournament->status === 'setup') {
             $reqs['status'] = 'group';
@@ -115,14 +117,22 @@ class TournamentRoundController extends Controller
      */
     public function referee($round)
     {
+        $tournament = TournamentRound::where('id', $round)->whereHas('tournament', fn($x) => $x->where('status', 'active'))->first();
         return view('admin.referee', [
-            'round' => TournamentFactory::get(TournamentRound::where('id', $round)->first()),
+            'round' => TournamentFactory::get($tournament),
             'listRefereeDuties' => TournamentFactory::referee(
-                User::with(['groups', 'tournamentHoles'])->whereHas('refereeDuties', function ($query) use ($round) {
-                    $query->where('tournament_round_id', $round)
-                        ->whereHasMorph('observer', [Group::class, TournamentHole::class]);
-                })
-                    ->get()
+                User::with(['groups' => function ($query) use ($round) {
+                    $query->wherePivot('tournament_round_id', $round);
+                }, 'tournamentHoles' => function ($query) use ($round) {
+                    $query->wherePivot('tournament_round_id', $round);
+                }])
+                    ->whereHas('refereeDuties', function ($query) use ($round) {
+                        $query->where('tournament_round_id', $round)
+                            ->whereHasMorph('observer', [Group::class, TournamentHole::class]);
+                    })
+                    ->role(['observer', 'referee'])
+                    ->get(),
+                $tournament->observer_type
             ),
             'referees' => User::select('id', 'name')->role(['referee', 'observer'])->paginate(10),
             'groups' => Group::where('tournament_round_id', $round)->pluck('name', 'id'),
@@ -137,9 +147,9 @@ class TournamentRoundController extends Controller
      */
     public function storeReferee($round, StoreTournamentRefereeRequest $request)
     {
-        $tournamentRound = TournamentRound::findOrFail($round);
+        $tournamentRound = TournamentRound::whereHas('tournament', fn($x) => $x->where('status', 'active'))->findOrFail($round);
 
-        if ($tournamentRound->status !== 'pace' && !in_array($tournamentRound->status, ['finish', 'active', 'pause'])) {
+        if (!in_array($tournamentRound->status, ['pace', 'setup', 'group', 'referee']) && !in_array($tournamentRound->status, ['finish', 'active', 'pause'])) {
             return redirect()->route('round.setup', ['round' => $round])->withErrors(['Error' => 'Cannot assign referees for a tournament round that is not in referee status.']);
         }
 
@@ -163,7 +173,10 @@ class TournamentRoundController extends Controller
             }
         }
 
-        $tournamentRound->update(['status' => 'referee']);
+        $tournamentRound->update([
+            'status' => 'referee',
+            'observer_type' => $request->observer_type ?? 'hole',
+        ]);
 
         TournamentRefereeDuty::insert($data);
 

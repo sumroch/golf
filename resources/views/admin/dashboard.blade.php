@@ -21,7 +21,8 @@
                     tees: [],
                     activeRound: null,
                     selectedTee: '',
-                    selectedSession: 'morning',
+                    selectedSession: '',
+                    selectedHistory: 'hole',
                     updatedAt: '',
                 }
             },
@@ -49,6 +50,7 @@
                             params: {
                                 tee: this.selectedTee,
                                 session: this.selectedSession,
+                                history: this.selectedHistory,
                             }
                         })
                         .then(response => {
@@ -107,7 +109,8 @@
 @endsection
 
 @section('page-content')
-    <div class="w-full max-h-screen h-full p-4 bg-base-200 flex-wrap gap-4 overflow-auto" id="app">
+<div class="max-h-screen p-4 bg-base-200 h-full overflow-auto w-full" id="app">
+    <div class="w-full flex flex-wrap justify-start items-start gap-4">
         <div class="p-6 w-full bg-white rounded-2xl shadow-md flex items-stretch justify-between">
             <div class="w-3/4 font-bold flex flex-col justify-between">
                 <h2 class="text-4xl font-bold mb-3" v-text="round.name"></h2>
@@ -151,14 +154,14 @@
                 </ul>
             </div>
         @endif
-        <div class="w-full flex items-center justify-end my-4">
+        <div class="w-full flex items-center justify-end">
             <a class="cursor-pointer" :href="'{{ url('admin/dashboard-table') }}/' + round.id">
                 <img src="{{ asset('img/icon/table.svg') }}" alt="">
             </a>
         </div>
-        <form class="w-full flex items-stretch justify-center gap-4" action="{{ url()->current() }}" method="GET">
+        <form class="w-full flex flex-wrap md:flex-nowrap items-start justify-center gap-4" action="{{ url()->current() }}" method="GET">
             {{-- Pace Section --}}
-            <section class="w-2/3 flex items-center gap-4 flex-wrap">
+            <section class="w-full md:w-2/3 flex items-center gap-4 flex-wrap">
                 <div class="grow bg-linear-to-t to-green-700 from-green-500 p-4 text-white rounded-2xl text-center">
                     <h2 class="text-xl mb-2">Current Time</h2>
                     <h1 class="text-6xl font-bold tracking-widest" id="clock"><span class="hm"></span><span class="text-2xl sec">27</span></h1>
@@ -234,22 +237,29 @@
 
 
             {{-- History Section --}}
-            <section class="w-1/3">
+            <section class="w-full md:w-1/3">
                 <div class="bg-white rounded-2xl shadow-md p-4 max-h-175 overflow-auto">
                     <div class="flex items-center justify-end">
                         <p class="text-xs italic mb-1 text-gray-600" v-text="'Last Updated ' + updatedAt"></p>
                     </div>
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="text-xl">Flight History</h2>
-                        <select class="select rounded-lg w-auto select-sm cursor-pointer" name="session" v-model="selectedSession" v-on:change="getDatas()">
-                            <option value="morning">Morning</option>
-                            <option value="afternoon">Afternoon</option>
-                        </select>
+                        <div class="flex items-center gap-x-4">
+                            <select class="select rounded-lg w-auto select-sm cursor-pointer" name="history" v-model="selectedHistory" v-on:change="getDatas()">
+                                <option value="hole">Hole</option>
+                                <option value="group">Group</option>
+                            </select>
+                            <select class="select rounded-lg w-auto select-sm cursor-pointer" name="session" v-model="selectedSession" v-on:change="getDatas()">
+                                <option value="">All</option>
+                                <option value="morning">Morning</option>
+                                <option value="afternoon">Afternoon</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="grid grid-cols-1 gap-3">
                         <div class="w-full collapse collapse-arrow rounded-xl bg-base-100 border-base-300 border" v-for="(items, key) in holes" :key="key">
                             <input type="checkbox" />
-                            <div class="collapse-title py-2 text-lg rounded-none text-white bg-linear-to-t to-green-700 from-green-500" v-text="'Hole ' + key"></div>
+                            <div class="collapse-title py-2 text-lg rounded-none text-white bg-linear-to-t to-green-700 from-green-500" v-text="items[0].keys"></div>
                             <div class="collapse-content bg-gray-100 pb-0 text-sm px-0 row-start-3 col-start-1">
                                 <button class="w-full flex items-center justify-between py-2 px-4 font-bold" v-for="item in items" :key="item.id">
                                     <p v-text="item.name"></p>
@@ -405,4 +415,5 @@
             </form>
         </dialog>
     </div>
+</div>
 @endsection

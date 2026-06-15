@@ -29,6 +29,7 @@ class StoreTournamentRefereeRequest extends FormRequest
             'referees.*.observer_type' => ['required', 'in:group,hole'],
             'referees.*.observer_id' => ['required', 'array'],
             'referees.*.observer_id.*' => ['required', 'numeric'],
+            'observer_type' => ['required', 'in:group,hole'],
         ];
     }
 

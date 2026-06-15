@@ -61,7 +61,7 @@
                     </div>
                     @foreach ($teeGroups as $groups)
                         <div class="w-full">
-                            <div class="rounded-box border border-base-content/5 bg-base-100 w-full">
+                            <div class="rounded-box border border-base-content/5 bg-base-100 w-full overflow-auto lg:overflow-visible">
                                 <table class="table text-center border border-gray-200">
                                     <!-- head -->
                                     <thead class="text-black">

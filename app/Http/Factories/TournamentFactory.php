@@ -72,26 +72,28 @@ class TournamentFactory
 
         $datas->group_maps = $datas->groups->count() == 0
             ? []
-            : $datas->groups->when($session !== null, fn($query) => $query->where('session', $session))
-            ->map(function($group) {
+            : $datas->groups
+            ->when($session !== null, fn($query) => $query->where('session', $session))
+            ->map(function ($group) {
                 $group->time = Carbon::parse($group->time)->format('H:i');
                 $group->total_player = $group->players->count();
                 return $group;
             })
             ->groupBy('session')
-            ->map(function ($groups) {
-                return $groups->groupBy('tee');
+            ->map(function ($groups) use ($datas) {
+                return $datas->type == 'tee' ? $groups->groupBy('tee') : [$groups->sortBy('tee')->values()];
             });
 
         return $datas;
     }
 
-    public static function referee($datas)
+    public static function referee($datas, $type = 'hole')
     {
+        // dd($datas, $type);
         $result = [];
 
         foreach ($datas as $data) {
-            if ($data->groups->isNotEmpty()) {
+            if ($data->groups->isNotEmpty() && $type == 'group') {
                 $tempGroup = [
                     'user_id' => $data->id,
                     'observer_type' => 'group',
@@ -105,7 +107,7 @@ class TournamentFactory
                 $result[] = $tempGroup;
             }
 
-            if ($data->tournamentHoles->isNotEmpty()) {
+            if ($data->tournamentHoles->isNotEmpty() && $type == 'hole') {
                 $tempHole = [
                     'user_id' => $data->id,
                     'observer_type' => 'hole',

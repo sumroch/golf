@@ -23,6 +23,8 @@ class TournamentRound extends Model
         'action_date',
         'status',
         'transportation',
+        'observer_type',
+        'type',
     ];
 
     public function tournament()
@@ -40,7 +42,7 @@ class TournamentRound extends Model
         return $this->hasMany(Group::class);
     }
 
-    public function tournamentPace()
+    public function tournamentPaces()
     {
         return $this->hasMany(TournamentPace::class);
     }

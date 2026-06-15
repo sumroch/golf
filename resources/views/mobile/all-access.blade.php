@@ -72,7 +72,7 @@
             methods: {
                 getData() {
                     this.preloader(true);
-                    axios.get(`/referee/${this.activeObserver}`)
+                    axios.get(`/access/${this.activeObserver}`)
                         .then(response => {
                             this.member = response.data.data.all;
                             this.memberFirst = response.data.data.first;
@@ -171,7 +171,7 @@
                     this.preloader(true);
                     my_modal_2.close();
 
-                    axios.post(`/referee/${this.activePace.id}/finish`, {
+                    axios.post(`/access/${this.activePace.id}/finish`, {
                             _method: 'POST',
                         })
                         .then(response => {
@@ -187,7 +187,7 @@
                 },
                 unmonitoredTimer() {
                     this.preloader(true);
-                    axios.post(`/referee/${this.activePace.id}/unmonitored`, {
+                    axios.post(`/access/${this.activePace.id}/unmonitored`, {
                             _method: 'POST',
                         })
                         .then(response => {

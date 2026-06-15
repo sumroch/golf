@@ -5,11 +5,12 @@ namespace App\Imports;
 use App\Models\Group;
 use App\Models\Player;
 use Maatwebsite\Excel\Concerns\OnEachRow;
+use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Row;
 use Maatwebsite\Excel\Concerns\WithValidation;
 
-class AfternoonSheetImport implements OnEachRow, WithHeadingRow
+class AfternoonSheetImport implements OnEachRow, WithHeadingRow, WithValidation, SkipsEmptyRows
 {
     protected array $groupCache = [];
     protected array $options;
@@ -27,11 +28,11 @@ class AfternoonSheetImport implements OnEachRow, WithHeadingRow
     public function rules(): array
     {
         return [
-            '*.group'  => ['required'],
-            '*.time'   => ['required'],
-            '*.tee'    => ['required'],
-            '*.name'   => ['required'],
-            '*.origin' => ['required'],
+            '*.group'  => ['required', 'string'],
+            '*.time'   => ['required', 'string'],
+            '*.tee'    => ['required', 'numeric', 'min:1', 'max:18'],
+            '*.name'   => ['required', 'string'],
+            '*.origin' => ['required', 'string'],
         ];
     }
 

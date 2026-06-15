@@ -2,44 +2,48 @@
 
 namespace App\Http\Services;
 
+use App\Models\Course;
 use App\Models\TournamentHole;
 use App\Models\TournamentRound;
 use Carbon\Carbon;
+use Illuminate\Support\Collection;
 
 class GenerateTournamentData
 {
-    public function generatePace(TournamentRound $tournamentRound): void
+    public function generatePace(TournamentRound $tournamentRound, Collection $groups, Course $course, Collection $holes): void
     {
-        $course = $tournamentRound->tournament->course;
-
-        if ($tournamentRound->tournamentHoles()->count() == 0) {
+        if ($holes->count() == 0)
             $this->generateHoles($course->holes()->orderBy('number')->get(), $tournamentRound->id);
-        }
-
-        $holes = $tournamentRound->tournamentHoles()->orderBy('number', 'asc')->get();
 
         $orderHoles = $holes;
+        $count = $holes->count();
 
-        foreach ($tournamentRound->groups as $group) {
+        foreach ($groups as $group) {
             if ($group->tournamentPaces->count() == 0) {
 
                 $previousTime = $group->time;
 
-                if ((int) $group->tee !== 1) {
-                    $orderHoles = $this->orderHoles($holes, (int) $group->tee);
-                } else {
-                    $orderHoles = $holes;
-                }
+                $orderHoles = (int) $group->tee !== 1
+                    ? $this->orderHoles($holes, (int) $group->tee)
+                    : $holes;
 
-                foreach ($orderHoles as $hole) {
+                foreach ($orderHoles as $key => $hole) {
                     $start = Carbon::parse($previousTime);
                     $allow = Carbon::parse($hole->allowed_time);
 
-                    $actual = $start->addHour($allow->hour)->addMinute($allow->minute)->format('H:i:s');
+                    $actual = $start->addHour($allow->hour)->addMinute($allow->minute);
+
+                    if (($hole->number == 1 && $key != 0) || ($hole->number == ((int)($count / 2) + 1) && $key != 0)) {
+                        $crossover = Carbon::parse($hole->number == 1
+                            ? $tournamentRound->crossover_ten
+                            : $tournamentRound->crossover_one);
+
+                        $actual = $actual->addMinutes($crossover->minute);
+                    }
 
                     $group->tournamentPaces()->create([
                         'hole_id' => $hole->id,
-                        'time' => $actual,
+                        'time' => $actual->format('H:i:s'),
                         'type' => 'tee',
                         'tournament_round_id' => $tournamentRound->id,
                     ]);
@@ -70,7 +74,7 @@ class GenerateTournamentData
     {
         if (TournamentHole::where('tournament_round_id', $round)->count() == 0) {
             $cloneHoles = [];
-    
+
             foreach ($holes as $hole) {
                 $cloneHoles[] = [
                     'tournament_round_id' => $round,
@@ -82,9 +86,8 @@ class GenerateTournamentData
                     'created_at' => $hole->created_at,
                 ];
             }
-    
+
             TournamentHole::insert($cloneHoles);
         }
-        
     }
 }

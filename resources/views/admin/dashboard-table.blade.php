@@ -66,7 +66,7 @@
             </div>
         @endif
 
-        <div class="w-full flex items-center justify-end no-print">
+        <div class="w-full flex items-center justify-end no-print my-4 md:my-0">
             <a class="bg-gray-100 rounded-lg me-5 px-8 py-2 text-sm shadow border-2 border-gray-300 cursor-pointer hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 cursor-pointer" href="{{ route('dashboard-table-print', $round['id']) }}" target="_blank">
                 Print
             </a>
@@ -78,9 +78,9 @@
         @foreach ($paces as $session => $tees)
             @foreach ($tees as $teeIndex => $teeGroups)
                 <div class="w-full flex items-stretch justify-center gap-4 flex-wrap mb-4">
-                    <div class="w-full flex items-center justify-between">
+                    <div class="w-full flex flex-wrap items-center justify-between">
                         <p class="text-xl font-bold">PACE OF PLAY - {{ strtoupper($session) }}</p>
-                        <div class="flex items-center">
+                        <div class="flex items-center mt-2 md:mt-0">
                             <label class="label text-sm me-4">
                                 <div class="h-6 w-6 rounded bg-gray-300 me-1 shadow"></div>
                                 <span>Completed</span>
@@ -97,7 +97,7 @@
                     </div>
                     @foreach ($teeGroups as $keyGroups => $groups)
                         <div class="w-full">
-                            <div class="rounded-box border border-base-content/5 bg-base-100 w-full">
+                            <div class="rounded-box border border-base-content/5 bg-base-100 w-full overflow-auto lg:overflow-visible">
                                 <table class="table text-center border border-gray-200">
                                     <!-- head -->
                                     <thead class="text-black">

@@ -25,7 +25,7 @@
                 </div>
 
                 <div class="w-full p-4">
-                    <div class="rounded-box border border-green-700 bg-base-100 mb-4">
+                    <div class="rounded-box border border-green-700 bg-base-100 mb-4 overflow-auto md:overflow-visible">
                         <table class="table text-center">
                             <!-- head -->
                             <thead>

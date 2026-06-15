@@ -93,15 +93,27 @@
                         </ul>
                     </div>
                 @endif
-                <div class="grid grid-cols-2 gap-x-32 gap-y-2">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 lg:gap-x-32 gap-y-2">
+                    <fieldset class="fieldset hidden md:inline-block">
+                        <legend class="fieldset-legend">Starting Type</legend>
+                        <div class="flex flex-wrap items-center gap-4">
+                            <label class="label cursor-pointer">
+                                <input class="radio" name="type" type="radio" value="tee" {{ $round->type == 'tee' ? 'checked' : '' }} required />
+                                <span class="label-text text-black ms-2">Tee Time</span>
+                            </label>
+                            <label class="label cursor-pointer">
+                                <input class="radio" name="type" type="radio" value="shotgun" {{ $round->type == 'shotgun' ? 'checked' : '' }} />
+                                <span class="label-text text-black ms-2">Shotgun</span>
+                            </label>
+                        </div>
+                    </fieldset>
+
                     <fieldset class="fieldset">
                         <legend class="fieldset-legend">Start Interval <span class="text-red-700">*</span></legend>
                         <div class="grid grid-cols-2 gap-x-4">
                             <input class="input rounded-xl shadow w-full" name="start_interval_hour" type="text" value="{{ $round->start_interval_hour }}" placeholder="00" required />
                             <input class="input rounded-xl shadow w-full" name="start_interval_minute" type="text" value="{{ $round->start_interval_minute }}" placeholder="00" required />
                         </div>
-                    </fieldset>
-                    <fieldset class="fieldset">
                     </fieldset>
 
                     <fieldset class="fieldset">
@@ -137,7 +149,7 @@
 
                     <fieldset class="fieldset">
                         <legend class="fieldset-legend">Select Ball Type</legend>
-                        <div class="flex items-center gap-4">
+                        <div class="flex flex-wrap items-center gap-4">
                             <label class="label cursor-pointer">
                                 <input class="radio" name="ball" type="radio" value="2" {{ $round->ball == 2 ? 'checked' : '' }} required />
                                 <span class="label-text text-black ms-2">2 Balls</span>
@@ -154,7 +166,7 @@
                     </fieldset>
                     <fieldset class="fieldset">
                         <legend class="fieldset-legend">Transportation</legend>
-                        <div class="flex items-center gap-4">
+                        <div class="flex flex-wrap items-center gap-4">
                             <label class="label cursor-pointer">
                                 <input class="radio" name="transportation" type="radio" value="walk" {{ $round->transportation == 'walk' ? 'checked' : '' }} required />
                                 <span class="label-text text-black ms-2">Full walking</span>
@@ -174,9 +186,9 @@
             </div>
 
             <div class="w-full p-4 flex items-center justify-center mt-4">
-                <button class="bg-white rounded-lg shadow px-4 py-2 me-3 border border-gray-300 cursor-pointer">Cancel</button>
-                <button class="bg-green-700 rounded-lg shadow text-white px-4 py-2 cursor-pointer">Continue</button>
+                <button class="bg-white rounded-lg shadow px-4 py-2 me-3 border border-gray-300 cursor-pointer" type="button">Cancel</button>
+                <button class="bg-green-700 rounded-lg shadow text-white px-4 py-2 cursor-pointer" type="submit">Continue</button>
             </div>
-    </div>
+        </form>
     </div>
 @endsection

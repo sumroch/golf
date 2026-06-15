@@ -34,6 +34,7 @@ class UpdateTournamentRoundRequest extends FormRequest
             'crossover_ten_hour' => ['required', 'numeric', 'min:0', 'max:23'],
             'crossover_ten_minute' => ['required', 'numeric', 'min:0', 'max:59'],
             'ball' => ['required', Rule::in([2, 3, 4])],
+            'type' => ['required', Rule::in(['tee', 'shotgun'])],
             'transportation' => ['required', Rule::in(['walk', 'cart', 'combine'])],
         ];
     }

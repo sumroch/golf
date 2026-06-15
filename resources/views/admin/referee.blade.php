@@ -11,17 +11,33 @@
             data() {
                 return {
                     generate: {
-                        observer_type: '',
+                        observer_type: '{{ $round->observer_type }}',
+                        previous_observer_type: '{{ $round->observer_type }}',
                         duty: '',
                     },
                     datas: {{ Js::from(old('referees', $listRefereeDuties)) }},
                 }
             },
+            mounted() {
+                console.log(this.datas);
+                
+            },
             methods: {
                 removeHole(index) {
                     this.datas.splice(index, 1);
                 },
+                removeRefereeHole(index, holeIndex) {
+                    this.datas[index].observer_id.splice(holeIndex, 1);
+                },
                 createReferee() {
+                    
+                    if (this.generate.observer_type !== this.generate.previous_observer_type) {
+                        this.datas = [];
+                        console.log(this.datas);
+                        
+                        this.generate.previous_observer_type = this.generate.observer_type;
+                    }
+
                     if (this.datas.length === this.generate.duty) {
                         referee_modal.close();
                     } else if (this.datas.length > this.generate.duty) {
@@ -97,6 +113,7 @@
         </div>
 
         <form class="w-full px-4 pb-4" action="{{ route('round.referee.store', $round->id) }}" method="POST">
+            <input name="observer_type" type="hidden" :value="generate.observer_type" />
             @csrf
             <div class="p-4 bg-white rounded-2xl shadow-md mt-4">
                 <div class="border-b-4 border-green-700 pb-2 mb-2">
@@ -118,7 +135,7 @@
                         Add Referee
                     </button>
                 </div>
-                <div class="w-full grid grid-cols-2 gap-6 px-2 pb-2">
+                <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-6 px-2 pb-2">
 
                     <div class="p-8 rounded-2xl bg-white shadow-[0px_1px_4px_0px_rgba(0,0,0,0.2)] relative" v-for="(data, index) in datas" :key="index">
                         <span class="absolute right-3 top-3 rounded-full bg-red-700 text-white px-2 cursor-pointer" @click="removeHole(index)">x</span>
@@ -137,30 +154,78 @@
                                 <input type="hidden" :name="'referees[' + index + '][observer_type]'" v-model="data.observer_type" />
                                 <legend class="fieldset-legend">Select Hole <span class="text-red-700">*</span></legend>
                                 <div class="grid grid-cols-4 gap-4" v-if="data.observer_type != 'group'">
-                                    <select class="select rounded-xl w-full" :name="'referees[' + index + '][observer_id][]'" v-model="data.observer_id[0]">
-                                        <option disabled selected>Hole</option>
-                                        @foreach ($holes as $hole)
-                                            <option value="{{ $hole->id }}">{{ $hole->number }}</option>
-                                        @endforeach
-                                    </select>
-                                    <select class="select rounded-xl w-full" :name="'referees[' + index + '][observer_id][]'" v-model="data.observer_id[1]">
-                                        <option disabled selected>Hole</option>
-                                        @foreach ($holes as $hole)
-                                            <option value="{{ $hole->id }}">{{ $hole->number }}</option>
-                                        @endforeach
-                                    </select>
-                                    <select class="select rounded-xl w-full" :name="'referees[' + index + '][observer_id][]'" v-model="data.observer_id[2]">
-                                        <option disabled selected>Hole</option>
-                                        @foreach ($holes as $hole)
-                                            <option value="{{ $hole->id }}">{{ $hole->number }}</option>
-                                        @endforeach
-                                    </select>
-                                    <select class="select rounded-xl w-full" :name="'referees[' + index + '][observer_id][]'" v-model="data.observer_id[3]">
-                                        <option disabled selected>Hole</option>
-                                        @foreach ($holes as $hole)
-                                            <option value="{{ $hole->id }}">{{ $hole->number }}</option>
-                                        @endforeach
-                                    </select>
+                                    <div class=" w-full relative">
+                                        <select class="select rounded-xl w-full" :name="'referees[' + index + '][observer_id][]'" v-model="data.observer_id[0]">
+                                            <option disabled selected>Hole</option>
+                                            @foreach ($holes as $hole)
+                                                <option value="{{ $hole->id }}">{{ $hole->number }}</option>
+                                            @endforeach
+                                        </select>
+                                        <span class="absolute right-3 top-2 rounded-full bg-red-700 text-white px-2 py-0.5 cursor-pointer" @click="removeRefereeHole(index, 0)">x</span>
+                                    </div>
+                                    <div class=" w-full relative">
+                                        <select class="select rounded-xl w-full" :name="'referees[' + index + '][observer_id][]'" v-model="data.observer_id[1]">
+                                            <option disabled selected>Hole</option>
+                                            @foreach ($holes as $hole)
+                                                <option value="{{ $hole->id }}">{{ $hole->number }}</option>
+                                            @endforeach
+                                        </select>
+                                        <span class="absolute right-3 top-2 rounded-full bg-red-700 text-white px-2 py-0.5 cursor-pointer" @click="removeRefereeHole(index, 1)">x</span>
+                                    </div>
+                                    <div class=" w-full relative">
+                                        <select class="select rounded-xl w-full" :name="'referees[' + index + '][observer_id][]'" v-model="data.observer_id[2]">
+                                            <option disabled selected>Hole</option>
+                                            @foreach ($holes as $hole)
+                                                <option value="{{ $hole->id }}">{{ $hole->number }}</option>
+                                            @endforeach
+                                        </select>
+                                        <span class="absolute right-3 top-2 rounded-full bg-red-700 text-white px-2 py-0.5 cursor-pointer" @click="removeRefereeHole(index, 2)">x</span>
+                                    </div>
+                                    <div class=" w-full relative">
+                                        <select class="select rounded-xl w-full" :name="'referees[' + index + '][observer_id][]'" v-model="data.observer_id[3]">
+                                            <option disabled selected>Hole</option>
+                                            @foreach ($holes as $hole)
+                                                <option value="{{ $hole->id }}">{{ $hole->number }}</option>
+                                            @endforeach
+                                        </select>
+                                        <span class="absolute right-3 top-2 rounded-full bg-red-700 text-white px-2 py-0.5 cursor-pointer" @click="removeRefereeHole(index, 3)">x</span>
+                                    </div>
+                                    <div class=" w-full relative">
+                                        <select class="select rounded-xl w-full" :name="'referees[' + index + '][observer_id][]'" v-model="data.observer_id[4]">
+                                            <option disabled selected>Hole</option>
+                                            @foreach ($holes as $hole)
+                                                <option value="{{ $hole->id }}">{{ $hole->number }}</option>
+                                            @endforeach
+                                        </select>
+                                        <span class="absolute right-3 top-2 rounded-full bg-red-700 text-white px-2 py-0.5 cursor-pointer" @click="removeRefereeHole(index, 4)">x</span>
+                                    </div>
+                                    <div class=" w-full relative">
+                                        <select class="select rounded-xl w-full" :name="'referees[' + index + '][observer_id][]'" v-model="data.observer_id[5]">
+                                            <option disabled selected>Hole</option>
+                                            @foreach ($holes as $hole)
+                                                <option value="{{ $hole->id }}">{{ $hole->number }}</option>
+                                            @endforeach
+                                        </select>
+                                        <span class="absolute right-3 top-2 rounded-full bg-red-700 text-white px-2 py-0.5 cursor-pointer" @click="removeRefereeHole(index, 5)">x</span>
+                                    </div>
+                                    <div class=" w-full relative">
+                                        <select class="select rounded-xl w-full" :name="'referees[' + index + '][observer_id][]'" v-model="data.observer_id[6]">
+                                            <option disabled selected>Hole</option>
+                                            @foreach ($holes as $hole)
+                                                <option value="{{ $hole->id }}">{{ $hole->number }}</option>
+                                            @endforeach
+                                        </select>
+                                        <span class="absolute right-3 top-2 rounded-full bg-red-700 text-white px-2 py-0.5 cursor-pointer" @click="removeRefereeHole(index, 6)">x</span>
+                                    </div>
+                                    <div class=" w-full relative">
+                                        <select class="select rounded-xl w-full" :name="'referees[' + index + '][observer_id][]'" v-model="data.observer_id[7]">
+                                            <option disabled selected>Hole</option>
+                                            @foreach ($holes as $hole)
+                                                <option value="{{ $hole->id }}">{{ $hole->number }}</option>
+                                            @endforeach
+                                        </select>
+                                        <span class="absolute right-3 top-2 rounded-full bg-red-700 text-white px-2 py-0.5 cursor-pointer" @click="removeRefereeHole(index, 7)">x</span>
+                                    </div>
                                 </div>
                                 <div class="grid grid-cols-4 gap-4" v-if="data.observer_type == 'group'">
                                     <select class="select rounded-xl w-full" :name="'referees[' + index + '][observer_id][]'" v-model="data.observer_id[0]">
@@ -182,6 +247,30 @@
                                         @endforeach
                                     </select>
                                     <select class="select rounded-xl w-full" :name="'referees[' + index + '][observer_id][]'" v-model="data.observer_id[3]">
+                                        <option disabled selected>Group</option>
+                                        @foreach ($groups as $key => $group)
+                                            <option value="{{ $key }}">{{ $group }}</option>
+                                        @endforeach
+                                    </select>
+                                    <select class="select rounded-xl w-full" :name="'referees[' + index + '][observer_id][]'" v-model="data.observer_id[4]">
+                                        <option disabled selected>Group</option>
+                                        @foreach ($groups as $key => $group)
+                                            <option value="{{ $key }}">{{ $group }}</option>
+                                        @endforeach
+                                    </select>
+                                    <select class="select rounded-xl w-full" :name="'referees[' + index + '][observer_id][]'" v-model="data.observer_id[5]">
+                                        <option disabled selected>Group</option>
+                                        @foreach ($groups as $key => $group)
+                                            <option value="{{ $key }}">{{ $group }}</option>
+                                        @endforeach
+                                    </select>
+                                    <select class="select rounded-xl w-full" :name="'referees[' + index + '][observer_id][]'" v-model="data.observer_id[6]">
+                                        <option disabled selected>Group</option>
+                                        @foreach ($groups as $key => $group)
+                                            <option value="{{ $key }}">{{ $group }}</option>
+                                        @endforeach
+                                    </select>
+                                    <select class="select rounded-xl w-full" :name="'referees[' + index + '][observer_id][]'" v-model="data.observer_id[7]">
                                         <option disabled selected>Group</option>
                                         @foreach ($groups as $key => $group)
                                             <option value="{{ $key }}">{{ $group }}</option>

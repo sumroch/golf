@@ -64,7 +64,7 @@
                         </ul>
                     </div>
                 @endif
-                <div class="w-full pt-2 flex items-center justify-end">
+                <div class="w-full pt-2 flex items-center flex-wrap md:justify-end gap-y-2">
                     <form action="{{ route('round.group.delete', $round->id) }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         @method('DELETE')
@@ -73,7 +73,7 @@
                             <span>Delete Group</span>
                         </button>
                     </form>
-                    <a class="bg-white rounded-lg shadow px-4 py-1 text-sm me-3 border border-gray-300 flex items-center cursor-pointer" href="{{ asset('document/template.xlsx') }}" target="_blank">
+                    <a class="bg-white rounded-lg shadow px-4 py-1 text-sm me-3 border border-gray-300 flex items-center cursor-pointer" href="{{ asset('document/' . ($round->type == 'tee' ? 'template-tee.xlsx' : 'template-shotgun.xlsx')) }}" target="_blank">
                         <img class="me-2 w-4 h-4" src="{{ asset('img/icon/download.svg') }}" alt="">
                         <span>Download Template</span>
                     </a>

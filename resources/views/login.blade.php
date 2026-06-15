@@ -15,7 +15,7 @@
                         <!-- Toggle Container -->
                         <div class="relative w-full">
                             <!-- Input Checkbox -->
-                            <input class="sr-only" id="section-toggle" name="section" type="checkbox" value="referee" onchange="toggleLabel()">
+                            <input class="sr-only" id="section-toggle" name="section" type="checkbox" value="referee" onchange="toggleLabel()" {{ old('section', 'referee') == 'referee' ? 'checked' : '' }}>
                             <!-- Background -->
                             <div class="bg-gray-200 w-full h-10 rounded-full shadow-inner"></div>
                             <!-- Dot (moving part) -->
@@ -24,19 +24,31 @@
                             </div>
                             <!-- Labels inside the track for visual cue -->
                             <div class="absolute inset-0 flex items-center justify-between pointer-events-none text-sm text-gray-500 tracking-wider">
-                                <span class="w-1/2 text-center" id="dashboard-label">Dashboard</span>
                                 <span class="w-1/2 text-center" id="referee-label">Referee Timer</span>
+                                <span class="w-1/2 text-center" id="dashboard-label">Dashboard</span>
                             </div>
                         </div>
                     </label>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700" for="username">Username</label>
-                    <input class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 placeholder:text-gray-400" id="username" name="username" type="text" required placeholder="Username">
+                    <label class="block text-sm font-medium text-gray-700" for="username" bv>Username</label>
+                    <input class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 placeholder:text-gray-400" id="username" name="username" type="text" value="{{ old('username') }}" required placeholder="Username">
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700" for="password">Password</label>
-                    <input class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 placeholder:text-gray-400" id="password" name="password" type="password" required placeholder="Insert Your Password">
+                    <div class="relative">
+                        <input class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 placeholder:text-gray-400" id="password" name="password" type="password" required placeholder="Insert Your Password">
+                        <svg class="absolute top-2.5 right-3 cursor-pointer lucide lucide-eye-icon lucide-eye" id="eyes-open" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" />
+                            <circle cx="12" cy="12" r="3" />
+                        </svg>
+                        <svg class="absolute top-2.5 right-3 cursor-pointer lucide lucide-eye-off-icon lucide-eye-off hidden" id="eyes-close" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49" />
+                            <path d="M14.084 14.158a3 3 0 0 1-4.242-4.242" />
+                            <path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143" />
+                            <path d="m2 2 20 20" />
+                        </svg>
+                    </div>
                 </div>
                 @if ($errors->any())
                     <div class="grid grid-cols-2 gap-4 py-4 px-6 border border-red-300 bg-red-100 rounded-lg">
@@ -53,7 +65,6 @@
                     </button>
                     <div class="text-center text-xs my-3 relative">
                         <span class="relative z-1 bg-white rounded-full p-1">OR</span>
-                        <!-- Added line in the middle of text -->
                         <hr class="my-2 border-gray-300 absolute top-0 z-0 w-full">
                     </div>
                 </div>
@@ -89,22 +100,38 @@
             const dot = document.querySelector('.dot');
 
             if (checkbox.checked) {
-                dashboardLabel.classList.remove('text-white');
                 dashboardLabel.classList.add('text-gray-500');
-                refereeLabel.classList.remove('text-gray-500');
+                dashboardLabel.classList.remove('text-white');
                 refereeLabel.classList.add('text-white');
-                // Adjusting pixel value for smoother transition instead of rough percentages
-                dot.style.transform = 'translateX(95.5%)';
-            } else {
-                dashboardLabel.classList.remove('text-gray-500');
-                dashboardLabel.classList.add('text-white');
-                refereeLabel.classList.remove('text-white');
-                refereeLabel.classList.add('text-gray-500');
                 dot.style.transform = 'translateX(0)';
                 dot.classList.remove('translate-x-full');
+            } else {
+                dashboardLabel.classList.add('text-white');
+                dashboardLabel.classList.remove('text-gray-500');
+                refereeLabel.classList.add('text-gray-500');
+                dot.style.transform = 'translateX(95.5%)';
             }
         }
 
-        toggleLabel(); // Initialize the toggle state on page load
+        function togglePasswordVisibility() {
+            const passwordInput = document.getElementById('password');
+            const eyesOpen = document.getElementById('eyes-open');
+            const eyesClose = document.getElementById('eyes-close');
+
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyesOpen.style.display = 'none';
+                eyesClose.style.display = 'block';
+            } else {
+                passwordInput.type = 'password';
+                eyesOpen.style.display = 'block';
+                eyesClose.style.display = 'none';
+            }
+        }
+
+        document.getElementById('eyes-open').addEventListener('click', togglePasswordVisibility);
+        document.getElementById('eyes-close').addEventListener('click', togglePasswordVisibility);
+
+        toggleLabel();
     </script>
 @endsection

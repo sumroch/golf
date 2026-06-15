@@ -10,7 +10,7 @@ use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
 use Maatwebsite\Excel\Row;
 
-class MorningSheetImport implements OnEachRow, WithHeadingRow, WithValidation, SkipsEmptyRows
+class MorningShotgunSheetImport implements OnEachRow, WithHeadingRow, WithValidation, SkipsEmptyRows
 {
     protected array $groupCache = [];
     protected array $options;
@@ -29,7 +29,6 @@ class MorningSheetImport implements OnEachRow, WithHeadingRow, WithValidation, S
     {
         return [
             '*.group'  => ['required', 'string'],
-            '*.time'   => ['required', 'string'],
             '*.tee'    => ['required', 'numeric', 'min:1', 'max:18'],
             '*.name'   => ['required', 'string'],
             '*.origin' => ['required', 'string'],
@@ -39,7 +38,7 @@ class MorningSheetImport implements OnEachRow, WithHeadingRow, WithValidation, S
     public function onRow(Row $row)
     {
         $data = $row->toArray();
-        // dd($data);
+        // dd($this->options['round']->toArray());
 
         if (!isset($data['group']) && !isset($data['time']) && !isset($data['tee'])) {
             return;
@@ -49,10 +48,10 @@ class MorningSheetImport implements OnEachRow, WithHeadingRow, WithValidation, S
             $this->groupCache[$data['group']] = Group::firstOrCreate(
                 [
                     'name' => $data['group'],
-                    'time'  => $data['time'],
+                    'time'  => $this->options['round']->morning,
                     'tee'   => $data['tee'],
                     'session'   => 'morning',
-                    'tournament_round_id' => $this->options['round_id'],
+                    'tournament_round_id' => $this->options['round']->id,
                 ],
                 []
             );

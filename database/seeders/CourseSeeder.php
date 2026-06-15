@@ -34,12 +34,15 @@ class CourseSeeder extends Seeder
     }
 
     public function createHole () {
+        $items = [15, 18, 12, 15, 15, 15, 12, 18, 15, 18, 15, 12, 15, 12, 15, 15, 15, 18];
+
         $data = [];
 
-        foreach (range(1, 18) as $index) {
+        foreach ($items as $key => $item) {
             $data[] = [
-                'number' => $index,
-                'allowed_time' => Carbon::createFromFormat('H:i', '00:10')->addMinutes($index * 1)->format('H:i'),
+                'number' => $key + 1,
+                'par' => rand(3, 5),
+                'allowed_time' => '00:' . $item . ':00',
             ];
         }
 

@@ -15,6 +15,7 @@ class MobileFactories
             $progress = 'created';
             $time_diff = '-';
             $finish = null;
+            $finish_text_class = null;
 
             if ($item->finish_at) {
                 $finish = Carbon::createFromFormat('Y-m-d H:i:s', $item->finish_at, 'UTC')->setTimezone('Asia/Jakarta');
@@ -22,9 +23,25 @@ class MobileFactories
 
 
                 $time_diff = (int) $allow->diffInMinutes($finish, false);
+                $time_diff_float = $allow->diffInMinutes($finish, false);
+
+                if ($time_diff_float < 1) {
+                    $progress = 'ontime';
+                    $finish_text_class = 'text-green-600';
+                } elseif ($time_diff_float > 1 && $time_diff_float <= 3) {
+                    $progress = 'late';
+                    $finish_text_class = 'text-yellow-400';
+                } elseif ($time_diff_float > 3) {
+                    $progress = 'overdue';
+                    $finish_text_class = 'text-red-500';
+                }
+
+                if ($item->status == 'unmonitored') {
+                    $progress = 'unmonitored';
+                    $finish_text_class = 'text-red-700';
+                }
 
                 $time_diff = ($time_diff >= 0 ? '+' : '') . $time_diff . ' mins';
-                $progress = $finish->greaterThan($allow) ? 'late' : 'ontime';
             }
 
             return [
@@ -39,6 +56,7 @@ class MobileFactories
                 "progress" => $progress,
                 "time_diff" => $time_diff,
                 "par" => 'Par ' . $item->par,
+                'finish_text_class' => $finish_text_class,
             ];
         });
 

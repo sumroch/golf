@@ -14,7 +14,7 @@ class TournamentRoundPaceController extends Controller
      */
     public function pace($round, PaceService $paceService)
     {
-        $tournament = TournamentFactory::get(TournamentRound::where('id', $round)->first());
+        $tournament = TournamentFactory::get(TournamentRound::where('id', $round)->whereHas('tournament', fn($x) => $x->where('status', 'active'))->first());
 
         $holes = $paceService->holeType($tournament->tournament->course_id, $round);
 
@@ -22,7 +22,7 @@ class TournamentRoundPaceController extends Controller
             'round' => $tournament,
             'tee_one' => $holes[1],
             'tee_ten' => $holes[10],
-            'paces' => PaceFactory::callWithDetail($paceService->getCurrentTournamentPace($round)),
+            'paces' => PaceFactory::callWithDetail($paceService->getCurrentTournamentPace($round), $tournament->type)
         ]);
     }
 
@@ -31,7 +31,7 @@ class TournamentRoundPaceController extends Controller
      */
     public function pacePrint($round, PaceService $paceService)
     {
-        $tournament = TournamentFactory::get(TournamentRound::where('id', $round)->first());
+        $tournament = TournamentFactory::get(TournamentRound::where('id', $round)->whereHas('tournament', fn($x) => $x->where('status', 'active'))->first());
 
         $holes = $paceService->holeType($tournament->tournament->course_id, $round);
 
@@ -39,7 +39,7 @@ class TournamentRoundPaceController extends Controller
             'round' => $tournament,
             'tee_one' => $holes[1],
             'tee_ten' => $holes[10],
-            'paces' => PaceFactory::callWithDetail($paceService->getCurrentTournamentPace($round)),
+            'paces' => PaceFactory::callWithDetail($paceService->getCurrentTournamentPace($round), $tournament->type),
         ]);
     }
 }

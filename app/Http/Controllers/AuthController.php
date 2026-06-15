@@ -59,9 +59,9 @@ class AuthController extends Controller
             return redirect()->route('tournament.index');
         }
 
-        return redirect()->route('login')->withErrors([
+        return redirect()->back()->withErrors([
             'username' => __('trans.error_login'),
-        ]);
+        ])->withInput();
     }
 
     public function authenticateQr(Request $request, CheckTournament $checkTournament)

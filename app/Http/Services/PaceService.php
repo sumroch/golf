@@ -32,8 +32,8 @@ class PaceService
             return $hole;
         });
 
-        $total_one = '00:00';
-        $total_ten = '00:00';
+        $total_one = $holes->isEmpty() ? Carbon::parse('00:00') : '00:00';
+        $total_ten = $holes->isEmpty() ? Carbon::parse('00:00') : '00:00';
 
         foreach ($holes as $hole) {
             if ($hole->number <= 9) {
@@ -51,15 +51,16 @@ class PaceService
         ];
     }
 
-    public function getPacesByHoles($tournament_round_id, $session = 'morning'): ?object
+    public function getPacesByHoles($tournament_round_id, $session = 'morning', $order = 'hole'): ?object
     {
-        return TournamentPace::select('tournament_paces.time', 'type', 'finish_at', 'status', 'group_id', 'groups.name', 'tournament_holes.number as hole_number', 'tournament_holes.allowed_time')
+        return TournamentPace::select('tournament_paces.time', 'type', 'finish_at', 'status', 'group_id', 'groups.name as group_name', 'tournament_holes.number as hole_number', 'tournament_holes.allowed_time')
             ->join('tournament_holes', 'tournament_paces.hole_id', '=', 'tournament_holes.id')
             ->join('groups', 'tournament_paces.group_id', '=', 'groups.id')
             ->where('tournament_paces.tournament_round_id', $tournament_round_id)
             ->whereIn('tournament_paces.status', ['unmonitored', 'finish'])
             ->when(in_array($session, ['morning', 'afternoon']), fn($query) => $query->where('groups.session', $session))
-            ->orderBy('tournament_holes.number', 'asc')
+            ->when($order === 'hole', fn($query) => $query->orderBy('tournament_holes.number', 'asc'))
+            ->when($order === 'group', fn($query) => $query->orderBy('group_id', 'asc'))
             ->get();
     }
 

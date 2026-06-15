@@ -14,13 +14,19 @@ class TournamentRoundActionController extends Controller
      */
     public function start($round)
     {
-        $tournament = TournamentRound::findOrFail($round);
+        $tournament = TournamentRound::whereHas('tournament', fn($x) => $x->where('status', 'active'))->with('tournament')->findOrFail($round);
 
         if ($tournament->status !== 'referee') {
             return redirect()->back()->withErrors(['Error' => 'Cannot start tournament round if the referee is empty.']);
         }
 
-        if (TournamentRound::whereIn('status', ['active', 'pause'])->exists()) {
+        $check = TournamentRound::whereIn('status', ['active', 'pause'])
+            ->whereHas('tournament', function ($query) {
+                $query->where('status', 'active');
+            })
+            ->exists();
+
+        if ($check) {
             return redirect()->back()->withErrors(['Error' => 'Another tournament round is already active.']);
         }
 
@@ -34,7 +40,7 @@ class TournamentRoundActionController extends Controller
      */
     public function stop($round)
     {
-        $tournament = TournamentRound::findOrFail($round);
+        $tournament = TournamentRound::whereHas('tournament', fn($x) => $x->where('status', 'active'))->findOrFail($round);
 
         if ($tournament->status !== 'active') {
             return redirect()->back()->withErrors(['Error' => 'Cannot stop tournament round that is not active.']);
@@ -50,7 +56,7 @@ class TournamentRoundActionController extends Controller
      */
     public function pause($round)
     {
-        $tournament = TournamentRound::findOrFail($round);
+        $tournament = TournamentRound::whereHas('tournament', fn($x) => $x->where('status', 'active'))->findOrFail($round);
 
         if ($tournament->status !== 'active') {
             return redirect()->back()->withErrors(['Error' => 'Cannot pause !, this tournament round is not active.']);
@@ -69,7 +75,7 @@ class TournamentRoundActionController extends Controller
      */
     public function resume(ResumeRequest $request, $round, PaceActionService $paceActionService)
     {
-        $tournament = TournamentRound::findOrFail($round);
+        $tournament = TournamentRound::whereHas('tournament', fn($x) => $x->where('status', 'active'))->findOrFail($round);
 
         if ($tournament->status !== 'pause') {
             return redirect()->back()->withErrors(['Error' => 'Cannot resume tournament round that is not paused.']);

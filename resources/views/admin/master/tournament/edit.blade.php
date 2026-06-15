@@ -42,17 +42,17 @@
                     </div>
                 @endif
 
-                <div class="grid grid-cols-2 gap-x-32 gap-y-2 pb-4">
-                    <fieldset class="fieldset">
+                <div class="grid grid-cols-2 gap-x-4 md:gap-x-32 gap-y-2 pb-4">
+                    <fieldset class="fieldset md:col-span-1 col-span-2">
                         <legend class="fieldset-legend">Tournament Name<span class="text-red-700">*</span></legend>
                         <input class="input rounded-xl w-full" name="name" type="text" placeholder="Type here" value="{{ $tournament->name }}" />
                     </fieldset>
-                    <fieldset class="fieldset">
+                    <fieldset class="fieldset md:col-span-1 col-span-2">
                         <legend class="fieldset-legend">Organizer<span class="text-red-700">*</span></legend>
                         <input class="input rounded-xl w-full" name="organizer" type="text" placeholder="Type here" value="{{ $tournament->organizer }}" />
                     </fieldset>
 
-                    <div class="grid grid-cols-2 gap-x-4">
+                    <div class="grid grid-cols-2 gap-x-4 col-span-2 md:col-span-1">
                         <fieldset class="fieldset">
                             <legend class="fieldset-legend">Location <span class="text-red-700">*</span></legend>
                             <select class="select rounded-xl w-full" name="location">

@@ -91,7 +91,7 @@
                 </div>
 
                 <div class="w-full p-4">
-                    <div class="rounded-box border border-green-700 bg-base-100 mb-4">
+                    <div class="rounded-box border border-green-700 bg-base-100 mb-4 overflow-auto md:overflow-visible">
                         <table class="table text-center">
                             <!-- head -->
                             <thead>
@@ -155,18 +155,18 @@
                     </div>
                     <form class="p-6" action="{{ route('referee.store') }}" method="POST">
                         @csrf
-                        <div class="w-full grid grid-cols-2 gap-18">
-                            <div class="w-full flex items-center gap-4 mt-4">
+                        <div class="w-full grid grid-cols-1 md:grid-cols-2 md:gap-18">
+                            <div class="w-full flex flex-wrap md:flex-nowrap items-center md:gap-4 mt-2 md:mt-4">
                                 <legend class="fieldset-legend w-1/2 flex justify-start">Full Name<span class="text-red-700">*</span></legend>
                                 <input class="input rounded-xl validator placeholder:text-gray-500 placeholder:italic w-full" name="name" type="text" required placeholder="Full Name" />
                             </div>
 
-                            <div class="w-full flex items-center gap-4 mt-4">
+                            <div class="w-full flex flex-wrap md:flex-nowrap items-center md:gap-4 mt-2 md:mt-4">
                                 <legend class="fieldset-legend w-1/2 flex justify-start">Akronim<span class="text-red-700">*</span></legend>
                                 <input class="input rounded-xl validator placeholder:text-gray-500 placeholder:italic w-full" name="acronym" type="text" required placeholder="Akronim" />
                             </div>
                         </div>
-                        <div class="w-full flex items-center gap-4 mt-4">
+                        <div class="w-full flex flex-wrap md:flex-nowrap items-center md:gap-4 mt-2 md:mt-4">
                             <legend class="fieldset-legend w-1/6 flex justify-start">Position<span class="text-red-700">*</span></legend>
                             <select class="select rounded-xl w-full" name="position">
                                 <option disabled selected>Pick Referee</option>
@@ -177,23 +177,23 @@
                                 <option value="observer">Observer</option>
                             </select>
                         </div>
-                        <div class="w-full flex items-center gap-4 mt-4">
+                        {{-- <div class="w-full flex flex-wrap md:flex-nowrap items-center md:gap-4 mt-2 md:mt-4">
                             <legend class="fieldset-legend w-1/6 flex justify-start">Whatsapp<span class="text-red-700">*</span></legend>
                             <input class="input rounded-xl validator placeholder:text-gray-500 placeholder:italic w-full" name="phone_number" type="text" required placeholder="Whatsapp" />
                         </div>
-                        <div class="w-full flex items-center gap-4 mt-4">
+                        <div class="w-full flex flex-wrap md:flex-nowrap items-center md:gap-4 mt-2 md:mt-4">
                             <legend class="fieldset-legend w-1/6 flex justify-start">Email<span class="text-red-700">*</span></legend>
                             <input class="input rounded-xl validator placeholder:text-gray-500 placeholder:italic w-full" name="email" type="email" placeholder="Email" />
-                        </div>
-                        <div class="w-full flex items-center gap-4 mt-4">
+                        </div> --}}
+                        <div class="w-full flex flex-wrap md:flex-nowrap items-center md:gap-4 mt-2 md:mt-4">
                             <legend class="fieldset-legend w-1/6 flex justify-start">Password<span class="text-red-700">*</span></legend>
-                            <input class="input rounded-xl validator placeholder:text-gray-500 placeholder:italic w-full" id="passinput" name="password" type="text" required placeholder="Password" />
+                            <input class="input rounded-xl validator placeholder:text-gray-500 placeholder:italic w-full" id="passinput" name="password" type="text" required placeholder="Password" value="1234" />
                         </div>
-                        <p class="text-xs underline underline-offset-1 cursor-pointer w-full text-end mt-1" v-on:click="generateSecurePassword('add')">Generate Password</p>
-                        <p class="underline underline-offset-1 cursor-pointer w-full text-center mt-2">Generate QR Code for Login</p>
+                        {{-- <p class="text-xs underline underline-offset-1 cursor-pointer w-full text-end mt-1" v-on:click="generateSecurePassword('add')">Generate Password</p>
+                        <p class="underline underline-offset-1 cursor-pointer w-full text-center mt-2">Generate QR Code for Login</p> --}}
 
                         <div class="flex items-center justify-end mt-6">
-                            <button class="bg-green-700 rounded-lg shadow text-white px-4 py-2 cursor-pointer" type="submit">Save</button>
+                            <button class="bg-green-700 rounded-lg shadow text-white px-4 py-2 cursor-pointer w-full md:w-auto" type="submit">Save</button>
                         </div>
                     </form>
                 </div>
@@ -217,18 +217,18 @@
                     <form class="p-6" :action="'{{ url('admin/master/referee') }}/' + form.id" method="POST">
                         @csrf
                         @method('PUT')
-                        <div class="w-full grid grid-cols-2 gap-18">
-                            <div class="w-full flex items-center gap-4 mt-4">
-                                <legend class="fieldset-legend w-1/2 flex justify-start">Full Name<span class="text-red-700">*</span></legend>
+                        <div class="w-full grid grid-cols-1 md:grid-cols-2 md:gap-18">
+                            <div class="w-full flex flex-wrap md:flex-nowrap items-center md:gap-4 mt-2 md:mt-4">
+                                <legend class="fieldset-legend w-full md:w-1/2 flex justify-start">Full Name<span class="text-red-700">*</span></legend>
                                 <input class="input rounded-xl validator placeholder:text-gray-500 placeholder:italic w-full" name="name" type="text" required placeholder="Full Name" v-model="form.name" />
                             </div>
 
-                            <div class="w-full flex items-center gap-4 mt-4">
-                                <legend class="fieldset-legend w-1/2 flex justify-start">Akronim<span class="text-red-700">*</span></legend>
+                            <div class="w-full flex flex-wrap md:flex-nowrap items-center md:gap-4 mt-2 md:mt-4">
+                                <legend class="fieldset-legend w-full md:w-1/2 flex justify-start">Akronim<span class="text-red-700">*</span></legend>
                                 <input class="input rounded-xl validator placeholder:text-gray-500 placeholder:italic w-full" name="acronym" type="text" required placeholder="Akronim" v-model="form.acronym" />
                             </div>
                         </div>
-                        <div class="w-full flex items-center gap-4 mt-4">
+                        <div class="w-full flex flex-wrap md:flex-nowrap items-center md:gap-4 mt-2 md:mt-4">
                             <legend class="fieldset-legend w-1/6 flex justify-start">Position<span class="text-red-700">*</span></legend>
                             <select class="select rounded-xl w-full" name="position" v-model="form.roles[0].name">
                                 <option disabled selected>Pick Referee</option>
@@ -239,23 +239,23 @@
                                 <option value="observer">Observer</option>
                             </select>
                         </div>
-                        <div class="w-full flex items-center gap-4 mt-4">
+                        {{-- <div class="w-full flex flex-wrap md:flex-nowrap items-center md:gap-4 mt-2 md:mt-4">
                             <legend class="fieldset-legend w-1/6 flex justify-start">Whatsapp<span class="text-red-700">*</span></legend>
                             <input class="input rounded-xl validator placeholder:text-gray-500 placeholder:italic w-full" name="phone_number" type="text" required placeholder="Whatsapp" v-model="form.phone_number" />
                         </div>
-                        <div class="w-full flex items-center gap-4 mt-4">
+                        <div class="w-full flex flex-wrap md:flex-nowrap items-center md:gap-4 mt-2 md:mt-4">
                             <legend class="fieldset-legend w-1/6 flex justify-start">Email<span class="text-red-700">*</span></legend>
                             <input class="input rounded-xl validator placeholder:text-gray-500 placeholder:italic w-full" name="email" type="email" placeholder="Email" v-model="form.email" />
-                        </div>
-                        <div class="w-full flex items-center gap-4 mt-4">
+                        </div> --}}
+                        <div class="w-full flex flex-wrap md:flex-nowrap items-center md:gap-4 mt-2 md:mt-4">
                             <legend class="fieldset-legend w-1/6 flex justify-start">Password<span class="text-red-700">*</span></legend>
-                            <input class="input rounded-xl validator placeholder:text-gray-500 placeholder:italic w-full" id="passinput-update" name="password" type="text" placeholder="Password" />
+                            <input class="input rounded-xl validator placeholder:text-gray-500 placeholder:italic w-full" id="passinput-update" name="password" type="text" placeholder="Password"/>
                         </div>
-                        <p class="text-xs underline underline-offset-1 cursor-pointer w-full text-end mt-1" v-on:click="generateSecurePassword('update')">Generate Password</p>
-                        <p class="underline underline-offset-1 cursor-pointer w-full text-center mt-2">Generate QR Code for Login</p>
+                        {{-- <p class="text-xs underline underline-offset-1 cursor-pointer w-full text-end mt-1" v-on:click="generateSecurePassword('update')">Generate Password</p>
+                        <p class="underline underline-offset-1 cursor-pointer w-full text-center mt-2">Generate QR Code for Login</p> --}}
 
                         <div class="flex items-center justify-end mt-6">
-                            <button class="bg-green-700 rounded-lg shadow text-white px-4 py-2 cursor-pointer" type="submit">Save</button>
+                            <button class="bg-green-700 rounded-lg shadow text-white px-4 py-2 cursor-pointer w-full md:w-auto" type="submit">Save</button>
                         </div>
                     </form>
                 </div>

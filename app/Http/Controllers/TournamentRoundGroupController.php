@@ -6,6 +6,7 @@ use App\Http\Factories\TournamentFactory;
 use App\Http\Requests\UpdateGroupHoleRequest;
 use App\Http\Services\GenerateTournamentData;
 use App\Imports\GroupImport;
+use App\Imports\GroupShotgunImport;
 use App\Models\TournamentHole;
 use App\Models\TournamentRound;
 use Carbon\Carbon;
@@ -24,7 +25,7 @@ class TournamentRoundGroupController extends Controller
             'session' => ['string', 'in:morning,afternoon'],
         ]);
 
-        $tournament = TournamentRound::where('id', $round)->first();
+        $tournament = TournamentRound::where('id', $round)->whereHas('tournament', fn($x) => $x->where('status', 'active'))->first();
 
         if ($tournament->tournamentHoles()->count() == 0) {
             $generateTournamentData->generateHoles($tournament->tournament->course->holes()->orderBy('number')->get(), $tournament->id);
@@ -46,11 +47,15 @@ class TournamentRoundGroupController extends Controller
         ]);
     }
 
-    public function downloadTemplate()
+    public function downloadTemplate($round)
     {
-        $path = asset('document/template.xlsx');
+        $tournamentRound = TournamentRound::whereHas('tournament', fn($x) => $x->where('status', 'active'))->findOrFail($round);
 
-        return response()->download($path);
+        return response()->download(
+            $tournamentRound->type == 'tee'
+                ? asset('document/template_tee.xlsx')
+                : asset('document/template_shotgun.xlsx')
+        );
     }
 
     /**
@@ -62,7 +67,7 @@ class TournamentRoundGroupController extends Controller
             'file' => ['required', 'file', 'mimes:xlsx'],
         ]);
 
-        $tournamentRound = TournamentRound::findOrFail($round);
+        $tournamentRound = TournamentRound::whereHas('tournament', fn($x) => $x->where('status', 'active'))->findOrFail($round);
 
         if ($tournamentRound->status === 'setup') {
             return redirect()->route('round.setup', ['round' => $round])->withErrors(['Error' => 'Cannot import groups for an empty setup tournament round.']);
@@ -78,17 +83,25 @@ class TournamentRoundGroupController extends Controller
             });
 
             $tournamentRound->groups()->delete();
-            $tournamentRound->tournamentPaces()->delete();
+
+            if ($tournamentRound->tournamentPaces()->count() > 0)
+                $tournamentRound->tournamentPaces()->delete();
         }
 
         Excel::import(
-            new GroupImport(['round_id' => $round]),
+            $tournamentRound->type == 'shotgun'
+                ? new GroupShotgunImport(['round' => $tournamentRound])
+                : new GroupImport(['round_id' => $round]),
             $request->file('file')
         );
 
-        $generateTournamentData->generatePace(
-            TournamentRound::where('id', $round)->where('status', '!=', 'finish')->with(['groups.players', 'groups.tournamentPaces', 'tournament.course'])->first()
-        );
+        $tournamentRound->load(['groups.tournamentPaces', 'tournament.course', 'tournamentHoles' => function ($query) {
+            $query->orderBy('number', 'asc');
+        }]);
+
+        if ($tournamentRound->status !== 'finish') {
+            $generateTournamentData->generatePace($tournamentRound, $tournamentRound->groups, $tournamentRound->tournament->course, $tournamentRound->tournamentHoles);
+        }
 
         $tournamentRound->update(['status' => 'pace']);
 
@@ -97,10 +110,18 @@ class TournamentRoundGroupController extends Controller
 
     public function updateHole($round, UpdateGroupHoleRequest $request)
     {
-        $tournament = TournamentRound::find($round);
+        $tournament = TournamentRound::whereHas('tournament', fn($x) => $x->where('status', 'active'))->findOrFail($round);
 
         if (in_array($tournament->status, ['finish', 'active', 'pause'])) {
             return redirect()->back()->withErrors(['Error' => 'Cannot update holes for a finished, active, or paused tournament round.']);
+        }
+
+        if ($tournament->tournamentHoles()->count() == 0) {
+            return redirect()->back()->withErrors(['Error' => 'No holes found for this tournament round.']);
+        }
+
+        if ($tournament->groups()->count() > 0) {
+            return redirect()->back()->withErrors(['Error' => 'Cannot update holes for a tournament round with existing groups. Please delete the groups first.']);
         }
 
         foreach ($request->holes as $hole) {
@@ -120,7 +141,7 @@ class TournamentRoundGroupController extends Controller
      */
     public function deleteGroup($round)
     {
-        $tournament = TournamentRound::find($round);
+        $tournament = TournamentRound::whereHas('tournament', fn($x) => $x->where('status', 'active'))->find($round);
 
         if (in_array($tournament->status, ['finish', 'active', 'pause'])) {
             return redirect()->back()->withErrors(['Error' => 'Cannot delete groups for a finished, active, or paused tournament round.']);

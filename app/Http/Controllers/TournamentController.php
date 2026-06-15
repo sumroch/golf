@@ -58,7 +58,7 @@ class TournamentController extends Controller
         $tournament->rounds()->createMany(
             collect(range(1, $request->input('round')))->map(function ($roundNumber) use ($request) {
                 return [
-                    'date' => Carbon::parse($request->input('date'))->addDays($roundNumber - 1)->format('Y-m-d'),
+                    'date' => Carbon::parse($request->input('date_start'))->addDays($roundNumber - 1)->format('Y-m-d'),
                     'round_number' => $roundNumber,
                     'status' => 'setup',
                     'timezone' => $request->input('timezone') ?? 'Asia/Jakarta',
@@ -102,7 +102,7 @@ class TournamentController extends Controller
                         });
                         $round->groups()->delete();
                         $round->tournamentRefereeDuty()->delete();
-                        $round->tournamentPace()->delete();
+                        $round->tournamentPaces()->delete();
                         $round->delete();
                     }
 
@@ -140,7 +140,7 @@ class TournamentController extends Controller
                 });
                 $round->groups()->delete();
                 $round->tournamentRefereeDuty()->delete();
-                $round->tournamentPace()->delete();
+                $round->tournamentPaces()->delete();
                 $round->delete();
             });
 

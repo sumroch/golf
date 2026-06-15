@@ -1,9 +1,24 @@
 {{-- resources/views/layouts/sidebar.blade.php --}}
-<aside class="h-screen w-72 bg-white text-base-content flex flex-col shadow-lg z-1 no-print">
+<style>
+    /* .sidebar-area {
+        position: fixed;
+        left: 0;
+        top: 0;
+        z-index: 40;
+    } */
+
+    main,
+    .main-content {
+        flex: 1;
+        overflow: auto;
+    }
+</style>
+<aside class="h-screen w-72 bg-white text-base-content flex flex-col shadow-lg no-print sidebar-area transform transition-transform duration-300 -translate-x-full xl:translate-x-0 fixed xl:relative top-0 left-0 z-10">
     {{-- Brand / Logo --}}
-    <div class="px-4 py-6 flex items-end gap-3">
+    <div class="px-4 py-6 flex items-end gap-3 relative">
         <img class="w-10 h-10" src="{{ asset('img/icon/golf.png') }}" alt="" />
-        <h2 class="font-semibold text-lg text-green-700">Golf Tournament</h2>
+        <h2 class="font-semibold text-2xl text-green-700">Golfinger</h2>
+        <img class="w-10 h-10 p-2 rounded-full bg-green-700 shadow-lg absolute -right-5 sidebar-toggle xl:hidden" src="{{ asset('img/icon/right.svg') }}" alt="">
     </div>
 
     {{-- Menu (scrollable) --}}
@@ -119,15 +134,26 @@
                     <div>{{ auth()->user()->name }}</div>
                     <div class="text-xs text-neutral overflow-hidden truncate">{{ ucfirst(auth()->user()->getRoleNames()[0]) }}</div>
                 </div>
-                <img src="{{ asset('img/icon/arrow.svg') }}" alt="" class="w-3 h-3 me-2 mt-2">
+                <img class="w-3 h-3 me-2 mt-2" src="{{ asset('img/icon/arrow.svg') }}" alt="">
             </div>
             <ul class="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm" tabindex="-1">
                 <li>
                     <form class="inline-block" action="{{ route('logout') }}" method="POST">@csrf
-                        <button type="submit" class="w-full text-start h-full inline-block">Logout</button>
+                        <button class="w-full text-start h-full inline-block" type="submit">Logout</button>
                     </form>
                 </li>
             </ul>
         </div>
     </div>
 </aside>
+
+
+<script>
+    // Toggle sidebar on mobile
+    document.querySelectorAll('.sidebar-toggle').forEach(button => {
+        button.addEventListener('click', () => {
+            const sidebar = document.querySelector('aside');
+            sidebar.classList.toggle('-translate-x-full');
+        });
+    });
+</script>

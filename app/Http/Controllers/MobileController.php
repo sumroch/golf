@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Factories\MobileFactories;
 use App\Http\Services\MobileService;
 use App\Models\TournamentPace;
-use App\Models\TournamentRefereeDuty;
 use App\Models\TournamentRound;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -23,9 +23,13 @@ class MobileController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function index(Request $request, MobileService $mobileService): View
+    public function index(Request $request, MobileService $mobileService): View|RedirectResponse
     {
-        $tournamentRound = TournamentRound::where('status', 'active')->first();
+        $tournamentRound = TournamentRound::where('status', 'active')->whereHas('tournament', fn($x) => $x->where('status', 'active'))->first();
+        $check = $request->user()->hasRole(['referee', 'observer']);
+
+        if (!$check)
+            return redirect()->route('access');
 
         if (!$tournamentRound) {
             return $request->wantsJson() || $request->ajax()
@@ -37,7 +41,6 @@ class MobileController extends Controller
 
         $observerType = '';
         $observerTarget = '';
-        $check = $request->user()->hasRole(['referee', 'observer']);
 
         foreach ($holes as $key => $hole) {
             $hole->name = $hole->observer_type === 'hole'
@@ -70,6 +73,7 @@ class MobileController extends Controller
 
         $observers = $mobileService->getRefereObserver($request->user()->id, $pace->tournament_round_id);
 
+
         if ($mobileService->checkObserverIsValid($observers, $pace)) {
 
             $pace->update([
@@ -78,7 +82,7 @@ class MobileController extends Controller
             ]);
 
             $mobileService->actionObserver(
-                $mobileService->getListObserverReverse($observers, $pace),
+                $mobileService->getListObserverReverse($observers->first()->observer_type ?? null, $pace),
                 $pace
             );
 

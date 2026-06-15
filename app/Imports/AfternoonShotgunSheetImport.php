@@ -7,10 +7,10 @@ use App\Models\Player;
 use Maatwebsite\Excel\Concerns\OnEachRow;
 use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
-use Maatwebsite\Excel\Concerns\WithValidation;
 use Maatwebsite\Excel\Row;
+use Maatwebsite\Excel\Concerns\WithValidation;
 
-class MorningSheetImport implements OnEachRow, WithHeadingRow, WithValidation, SkipsEmptyRows
+class AfternoonShotgunSheetImport implements OnEachRow, WithHeadingRow, WithValidation, SkipsEmptyRows
 {
     protected array $groupCache = [];
     protected array $options;
@@ -29,7 +29,6 @@ class MorningSheetImport implements OnEachRow, WithHeadingRow, WithValidation, S
     {
         return [
             '*.group'  => ['required', 'string'],
-            '*.time'   => ['required', 'string'],
             '*.tee'    => ['required', 'numeric', 'min:1', 'max:18'],
             '*.name'   => ['required', 'string'],
             '*.origin' => ['required', 'string'],
@@ -39,9 +38,8 @@ class MorningSheetImport implements OnEachRow, WithHeadingRow, WithValidation, S
     public function onRow(Row $row)
     {
         $data = $row->toArray();
-        // dd($data);
 
-        if (!isset($data['group']) && !isset($data['time']) && !isset($data['tee'])) {
+        if (!isset($data['group']) && !isset($data['tee'])) {
             return;
         }
 
@@ -49,10 +47,10 @@ class MorningSheetImport implements OnEachRow, WithHeadingRow, WithValidation, S
             $this->groupCache[$data['group']] = Group::firstOrCreate(
                 [
                     'name' => $data['group'],
-                    'time'  => $data['time'],
+                    'time'  => $this->options['round']->afternoon,
                     'tee'   => $data['tee'],
-                    'session'   => 'morning',
-                    'tournament_round_id' => $this->options['round_id'],
+                    'session'   => 'afternoon',
+                    'tournament_round_id' => $this->options['round']->id,
                 ],
                 []
             );
