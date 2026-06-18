@@ -6,6 +6,7 @@ use App\Http\Factories\MobileFactories;
 use App\Http\Services\MobileAllAccessService;
 use App\Models\TournamentPace;
 use App\Models\TournamentRound;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -23,6 +24,8 @@ class MobileAllAccessController extends Controller
                 ? response()->json(['message' => 'Tournament not found'], 404)
                 : view('mobile.tournament-not-found');
         }
+
+        $tournamentRound->load(['groups.players']);
 
         $holes = $mobileAllService->getAllObserver($tournamentRound->id, $tournamentRound->observer_type);
 
@@ -43,6 +46,8 @@ class MobileAllAccessController extends Controller
             : view('mobile.all-access', [
                 'status_pause' => false,
                 'holes' => $holes,
+                'timezone' => $tournamentRound->timezone,
+                'groups' => $tournamentRound->groups ?? [],
                 'course_name' => $tournamentRound->tournament->course->name,
                 'observer_target' => '(' . $tournamentRound->observer_type . ' ' . $observerTarget . ')',
             ]);
@@ -66,9 +71,26 @@ class MobileAllAccessController extends Controller
             $mobileAllService->getListObserverReverse($tournamentRound->observer_type ?? null, $pace),
             $pace
         );
-        return response()->json([
-            'data' => $pace,
+        return response()->json(['data' => $pace ]);
+    }
+
+    public function edited($id, Request $request)
+    {
+        $pace = TournamentPace::where('id', $id)->first();
+
+        if (!$pace) {
+            return response()->json(['message' => 'Not Found'], 404);
+        }
+
+        $baseDate = Carbon::parse($pace->finish_at, 'UTC')->format('Y-m-d');
+        $finishAt = Carbon::parse($baseDate . ' ' . $request->input('time'), 'Asia/Jakarta')->setTimezone('UTC')->format('Y-m-d H:i:s');
+
+        $pace->update([
+            'status' => 'finish',
+            'finish_at' => $finishAt,
         ]);
+
+        return response()->json(['data' => $pace]);
     }
 
     public function unmonitored($id)

@@ -7,11 +7,13 @@ use App\Http\Requests\UpdateGroupHoleRequest;
 use App\Http\Services\GenerateTournamentData;
 use App\Imports\GroupImport;
 use App\Imports\GroupShotgunImport;
+use App\Imports\GroupStandardImport;
 use App\Models\TournamentHole;
 use App\Models\TournamentRound;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class TournamentRoundGroupController extends Controller
 {
@@ -64,7 +66,7 @@ class TournamentRoundGroupController extends Controller
     public function storeGroup($round, Request $request, GenerateTournamentData $generateTournamentData)
     {
         $request->validate([
-            'file' => ['required', 'file', 'mimes:xlsx'],
+            'file' => ['required', 'file', 'mimes:xlsx,xls'],
         ]);
 
         $tournamentRound = TournamentRound::whereHas('tournament', fn($x) => $x->where('status', 'active'))->findOrFail($round);
@@ -88,12 +90,31 @@ class TournamentRoundGroupController extends Controller
                 $tournamentRound->tournamentPaces()->delete();
         }
 
-        Excel::import(
-            $tournamentRound->type == 'shotgun'
-                ? new GroupShotgunImport(['round' => $tournamentRound])
-                : new GroupImport(['round_id' => $round]),
-            $request->file('file')
-        );
+        try {
+            Excel::import(
+                new GroupStandardImport(['round_id' => $round, 'file' => $request->file('file')]),
+                $request->file('file')
+            );
+        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+            $failures = $e->failures();
+            dd($failures);
+
+            foreach ($failures as $failure) {
+                $failure->row(); // row that went wrong
+                $failure->attribute(); // either heading key (if using heading row concern) or column index
+                $failure->errors(); // Actual error messages from Laravel validator
+                $failure->values(); // The values of the row that has failed.
+            }
+
+        }
+
+
+        // Excel::import(
+        //     $tournamentRound->type == 'shotgun'
+        //         ? new GroupShotgunImport(['round' => $tournamentRound])
+        //         : new GroupImport(['round_id' => $round]),
+        //     $request->file('file')
+        // );
 
         $tournamentRound->load(['groups.tournamentPaces', 'tournament.course', 'tournamentHoles' => function ($query) {
             $query->orderBy('number', 'asc');
