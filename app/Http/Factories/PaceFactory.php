@@ -4,8 +4,6 @@ namespace App\Http\Factories;
 
 use Carbon\Carbon;
 
-use function Symfony\Component\Clock\now;
-
 class PaceFactory
 {
     public static function call($datas, $session = null)
@@ -62,15 +60,15 @@ class PaceFactory
                             $finish = Carbon::createFromFormat('Y-m-d H:i:s', $pace->finish_at, 'UTC')->setTimezone('Asia/Jakarta');
 
                             $pace->time_diff_float = $allow->diffInMinutes($finish, false);
-                            $pace->time_diff = (int) $pace->time_diff_float;
-                            $pace->time_diff_integer = ($pace->time_diff >= 0 ? '+' : '') . $pace->time_diff;
-                            $pace->time_diff = '( ' . ($pace->time_diff >= 0 ? '+' : '') . $pace->time_diff . ' mins )';
+                            $pace->time_diff = (int) ceil($pace->time_diff_float);
+                            $pace->time_diff_integer = ($pace->time_diff > 0 ? '+' : '') . $pace->time_diff;
+                            $pace->time_diff = '( ' . ($pace->time_diff > 0 ? '+' : '') . $pace->time_diff . ' mins )';
 
-                            if ($pace->time_diff_float < 1) {
+                            if ($pace->time_diff_float <= 0) {
                                 $pace->progress = 'ontime';
                                 $pace->finish_class = 'bg-green-600';
                                 $pace->finish_text_class = 'text-green-600';
-                            } elseif ($pace->time_diff_float > 1 && $pace->time_diff_float <= 3) {
+                            } elseif ($pace->time_diff_float > 0 && $pace->time_diff_float <= 3) {
                                 $pace->progress = 'late';
                                 $pace->finish_class = 'bg-yellow-400';
                                 $pace->finish_text_class = 'text-yellow-400';
@@ -173,12 +171,12 @@ class PaceFactory
 
             $allow = Carbon::parse($finish->copy()->format('Y-m-d') . ' ' . $data->time, 'Asia/Jakarta');
             $data->time_diff_float = $allow->diffInMinutes($finish, false);
-            $data->time_diff = (int) $data->time_diff_float;
-            $data->time_diff = '( ' . ($data->time_diff >= 0 ? '+' : '') . $data->time_diff . ' mins )';
+            $data->time_diff = (int) ceil($data->time_diff_float);
+            $data->time_diff = '( ' . ($data->time_diff > 0 ? '+' : '') . $data->time_diff . ' mins )';
 
-            if ($data->time_diff_float < 1) {
+            if ($data->time_diff_float <= 0) {
                 $data->progress = 'ontime';
-            } elseif ($data->time_diff_float > 1 && $data->time_diff_float <= 3) {
+            } elseif ($data->time_diff_float > 0 && $data->time_diff_float <= 3) {
                 $data->progress = 'late';
             } elseif ($data->time_diff_float > 3) {
                 $data->progress = 'overdue';
@@ -207,9 +205,9 @@ class PaceFactory
 
                 $allow = Carbon::parse($finish->copy()->format('Y-m-d') . ' ' . $data->time, 'Asia/Jakarta');
                 $data->time_diff_float = $allow->diffInMinutes($finish, false);
-                $data->time_diff_number = (int) $data->time_diff_float;
+                $data->time_diff_number = (int) ceil($data->time_diff_float);
                 $data->time_percentage = max(0, min(100, round((($data->time_diff_number + 15) / 15) * 100)));
-                $data->time_diff = ($data->time_diff_number >= 0 ? '+' : '') . $data->time_diff_number . ' (' . $finish->format('H:i') . ')';
+                $data->time_diff = ($data->time_diff_number > 0 ? '+' : '') . $data->time_diff_number . ' (' . $finish->format('H:i') . ')';
 
                 if ($data->time_diff_float <= 0) {
                     $data->progress = 'ontime';

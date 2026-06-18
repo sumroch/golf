@@ -67,7 +67,7 @@ class MobileAllAccessService
                 ->leftJoin('tournament_holes', 'tournament_paces.hole_id', '=', 'tournament_holes.id')
                 ->where('hole_id', $observerId)
                 ->where('tournament_paces.tournament_round_id', $tournamentRoundId)
-                ->where('groups.session', $session)
+                // ->where('groups.session', $session)
                 // ->whereNotIn('tournament_paces.status', ['finish', 'unmonitored'])
                 ->orderBy('tournament_paces.time', 'asc');
         }, function ($query) use ($tournamentRoundId, $observerId, $session) {
@@ -75,7 +75,7 @@ class MobileAllAccessService
                 ->leftJoin('tournament_holes', 'tournament_paces.hole_id', '=', 'tournament_holes.id')
                 ->leftJoin('groups', 'tournament_paces.group_id', '=', 'groups.id')
                 ->where('group_id', $observerId)
-                ->where('groups.session', $session)
+                // ->where('groups.session', $session)
                 ->where('tournament_paces.tournament_round_id', $tournamentRoundId)
                 // ->whereNotIn('tournament_paces.status', ['finish', 'unmonitored'])
                 ->orderBy('tournament_holes.number', 'asc');

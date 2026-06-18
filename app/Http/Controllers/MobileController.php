@@ -6,6 +6,7 @@ use App\Http\Factories\MobileFactories;
 use App\Http\Services\MobileService;
 use App\Models\TournamentPace;
 use App\Models\TournamentRound;
+use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -37,6 +38,8 @@ class MobileController extends Controller
                 : view('mobile.tournament-not-found');
         }
 
+        $tournamentRound->load(['groups.players']);
+
         $holes = $mobileService->getRefereObserver($request->user()->id, $tournamentRound->id);
 
         $observerType = '';
@@ -61,7 +64,9 @@ class MobileController extends Controller
             ? response()->json(['data' => $holes])
             : view('mobile.index', [
                 'status_pause' => false,
+                'timezone' => $tournamentRound->timezone,
                 'holes' => $holes,
+                'groups' => $tournamentRound->groups ?? [],
                 'course_name' => $tournamentRound->tournament->course->name,
                 'observer_target' => '(' . $observerType . ' ' . $observerTarget . ')',
             ]);
@@ -85,6 +90,29 @@ class MobileController extends Controller
                 $mobileService->getListObserverReverse($observers->first()->observer_type ?? null, $pace),
                 $pace
             );
+
+            return response()->json(['data' => $pace]);
+        }
+
+        return response()->json(['message' => 'Not Found'], 404);
+    }
+
+    public function edited($id, Request $request, MobileService $mobileService)
+    {
+        $pace = TournamentPace::where('id', $id)->first();
+
+        $observers = $mobileService->getRefereObserver($request->user()->id, $pace->tournament_round_id);
+
+
+        if ($mobileService->checkObserverIsValid($observers, $pace)) {
+
+            $baseDate = Carbon::parse($pace->finish_at, 'UTC')->format('Y-m-d');
+            $finishAt = Carbon::parse($baseDate . ' ' . $request->input('time'), 'Asia/Jakarta')->setTimezone('UTC')->format('Y-m-d H:i:s');
+
+            $pace->update([
+                'status' => 'finish',
+                'finish_at' => $finishAt,
+            ]);
 
             return response()->json(['data' => $pace]);
         }

@@ -2,7 +2,6 @@
 
 namespace App\Http\Factories;
 
-use App\Models\TournamentPace;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
@@ -22,13 +21,13 @@ class MobileFactories
                 $allow = Carbon::parse($finish->copy()->format('Y-m-d') . ' ' . $item->time, 'Asia/Jakarta');
 
 
-                $time_diff = (int) $allow->diffInMinutes($finish, false);
+                $time_diff = (int) ceil($allow->diffInMinutes($finish, false));
                 $time_diff_float = $allow->diffInMinutes($finish, false);
 
-                if ($time_diff_float < 1) {
+                if ($time_diff_float <= 0) {
                     $progress = 'ontime';
                     $finish_text_class = 'text-green-600';
-                } elseif ($time_diff_float > 1 && $time_diff_float <= 3) {
+                } elseif ($time_diff_float > 0 && $time_diff_float <= 3) {
                     $progress = 'late';
                     $finish_text_class = 'text-yellow-400';
                 } elseif ($time_diff_float > 3) {
@@ -41,11 +40,12 @@ class MobileFactories
                     $finish_text_class = 'text-red-700';
                 }
 
-                $time_diff = ($time_diff >= 0 ? '+' : '') . $time_diff . ' mins';
+                $time_diff = ($time_diff > 0 ? '+' : '') . $time_diff . ' mins';
             }
 
             return [
                 'id' => $item->id,
+                'group_id' => $item->group_id ?? null,
                 'duty_id' => $duty_id,
                 'name' => $observer_type === 'group' ? 'Hole ' . $item->name : $item->name,
                 'time' => Carbon::parse($item->time)->format('H:i'),
