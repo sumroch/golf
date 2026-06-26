@@ -62,6 +62,7 @@
                     groupsModal: false,
                     finishTimeNow: '',
                     diffTimeFinish: '',
+                    timeDiffEdit: 0,
                 }
             },
             mounted() {
@@ -173,9 +174,11 @@
                     }
                 },
                 incrementTime(time) {
-                    let currentTime = moment(this.finishTimeNow, 'HH:mm');
-                    let newTime = currentTime.add(time, 'minutes').format('HH:mm');
-                    this.finishTimeNow = newTime;
+                    // let currentTime = moment(this.finishTimeNow, 'HH:mm');
+                    // let newTime = currentTime.add(time, 'minutes').format('HH:mm');
+                    // this.finishTimeNow = newTime;
+
+                    this.timeDiffEdit += time;
                 },
                 handleGroupsModal() {
                     this.groupsModal = true;
@@ -192,13 +195,14 @@
 
                 },
                 editFinish() {
-                    this.finishTimeNow = this.activePace?.time || moment().format('HH:mm');
+                    this.finishTimeNow = this.activePace?.finish_time === '-' ? moment().format('HH:mm') : this.activePace?.finish_time;
+                    this.timeDiffEdit = 0;
                     edit_modal.showModal();
                 },
                 submitFinish() {
-                    $diff = moment(moment().format('HH:mm:ss'), 'HH:mm:ss').diff(moment(this.activePace?.time, 'HH:mm:ss'), 'seconds');
+                    let diff = moment(moment().format('HH:mm:ss'), 'HH:mm:ss').diff(moment(this.activePace?.time, 'HH:mm:ss'), 'seconds');
 
-                    this.diffTimeFinish = ($diff > 0 ? '+' : '') + Math.ceil($diff / 60);
+                    this.diffTimeFinish = (diff > 0 ? '+' : '') + Math.ceil(diff / 60);
                     submit_modal.showModal();
                 },
                 finishTimer() {
@@ -224,7 +228,7 @@
 
                     axios.post(`/referee/${this.activePace.id}/edited`, {
                             _method: 'POST',
-                            time: moment(this.finishTimeNow, 'HH:mm').format('HH:mm:00'),
+                            time: moment(this.finishTimeNow, 'HH:mm').add(this.timeDiffEdit, 'minutes').format('HH:mm:00'),
                         })
                         .then(response => {
                             this.getData();
@@ -378,7 +382,7 @@
                 </div>
 
                 <div class="text-center" v-else>
-                    <button class="w-25 rounded-full border border-green-700 p-8 bg-white shadow-lg active:scale-95 hover:bg-green-100 transition cursor-pointer" v-on:click="editFinish">
+                    <button class="w-25 rounded-full border border-green-700 px-6 py-8 bg-white shadow-lg active:scale-95 hover:bg-green-100 transition cursor-pointer" v-on:click="editFinish">
                         <img class="w-full h-auto" src="{{ asset('img/icon/edit.svg') }}" alt="Play Button">
                     </button>
                     <p class="mt-2">EDIT</p>
@@ -435,7 +439,7 @@
                     <div class="flex items-center justify-between w-60 mx-auto mb-6">
                         <p v-text="activePace?.name"></p>
                         <p v-text="activeObserverName"></p>
-                        <p :class="{'text-green-700': diffTimeFinish < 0, 'text-orange-700': diffTimeFinish > 0 && diffTimeFinish <= 3, 'text-red-700': diffTimeFinish > 3}" v-text="diffTimeFinish"></p>
+                        <p :class="{ 'text-green-700': diffTimeFinish < 0, 'text-orange-700': diffTimeFinish > 0 && diffTimeFinish <= 3, 'text-red-700': diffTimeFinish > 3 }" v-text="diffTimeFinish"></p>
                     </div>
 
                     <div class="text-center mt-4">
@@ -457,17 +461,19 @@
 
             <dialog class="modal" id="edit_modal">
                 <div class="modal-box rounded-3xl">
-                    <img class="w-max-full h-auto mx-auto my-4" src="{{ asset('img/time.png') }}" alt="">
-                    <h3 class="text-xl font-bold text-center">Edit Hole</h3>
+                    <h3 class="text-3xl font-bold text-center" v-text="activeObserverName"></h3>
+                    <img class="w-max-full h-auto mx-auto my-2" src="{{ asset('img/time.png') }}" alt="">
+                    <h3 class="text-xl font-bold text-center" v-text="activePace?.name"></h3>
 
                     <div class="w-60 mx-auto mt-4">
-                        <p class="text-gray-400">Finish Time</p>
-                        <p class="border border-gray-300 shadow py-2 px-4 mt-1 rounded-lg bg-white text-gray-400" v-text='activePace?.finish_time'></p>
+                        <p class="text-gray-800">Current Time</p>
+                        <p class="border border-gray-300 shadow py-2 px-4 mt-1 rounded-lg bg-white text-gray-400 flex items-center justify-between">
+                            <span v-text='finishTimeNow'></span>
+                            <span class="text-gray-400 text-sm" v-text="timeDiffEdit" v-if="timeDiffEdit <= 0"></span>
+                            <span class="text-gray-400 text-sm" v-text="'+' + timeDiffEdit" v-else></span>
+                        </p>
 
-                        <p class="text-gray-400 mt-4">Finish Now</p>
-                        <p class="border border-green-700 shadow py-1.5 px-4 mt-1 rounded-lg bg-white text-green-700 font-bold text-xl text-center" v-text='finishTimeNow'></p>
-
-                        <div class="grid grid-cols-4 gap-2 mt-4 text-xs">
+                        {{-- <div class="grid grid-cols-4 gap-2 mt-4 text-xs">
                             <button class="w-full border border-green-700 text-gray-700 py-2 px-1 text-center rounded-xl hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 cursor-pointer" v-on:click="incrementTime(-2)">
                                 -2<br>min
                             </button>
@@ -481,11 +487,21 @@
                                 +2<br>min
                             </button>
 
+                        </div> --}}
+                        <p class="text-gray-800 mt-4">Adjust Time</p>
+                        <div class="grid-cols-4 gap-2 text-xs mt-1 flex items-center justify-between">
+                            <button class="w-auto border border-green-700 p-2 text-center rounded-xl hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 cursor-pointer" v-on:click="incrementTime(-1)">
+                                <span class="text-6xl font-bold text-green-700 leading-6 px-1.5">-</span>
+                            </button>
+                            <span class="text-7xl -mt-2.5 text-green-700 font-bold" v-text="timeDiffEdit"></span>
+                            <button class="w-auto border border-green-700 p-2 text-center rounded-xl hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 cursor-pointer" v-on:click="incrementTime(1)">
+                                <span class="text-6xl font-bold text-green-700 leading-6">+</span>
+                            </button>
                         </div>
                     </div>
 
-                    <div class="text-center mt-4">
-                        <button class="w-60 bg-green-700 text-white py-2 px-4 rounded-xl hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 cursor-pointer" v-on:click="editTimer()">
+                    <div class="text-center mt-6">
+                        <button class="w-60 bg-green-700 text-white p-4 rounded-xl hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 cursor-pointer" v-on:click="editTimer()">
                             Confirm
                         </button>
                         <form method="dialog">

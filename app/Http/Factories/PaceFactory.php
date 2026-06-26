@@ -78,7 +78,7 @@ class PaceFactory
                                 $pace->finish_text_class = 'text-red-500';
                             }
 
-                            $pace->finish_at = $finish->format('H:i');
+                            $pace->finish_at = $finish->ceilMinute()->format('H:i');
 
                             $pace->progress_class = 'bg-gray-300/50';
                         }
@@ -182,7 +182,7 @@ class PaceFactory
                 $data->progress = 'overdue';
             }
 
-            $data->finish_at = $finish->format('H:i');
+            $data->finish_at = $finish->ceilMinute()->format('H:i');
         }
 
         return $data;
@@ -218,7 +218,7 @@ class PaceFactory
                 }
 
                 if ($data->finish_at) {
-                    $data->finish_at = $finish->format('H:i');
+                    $data->finish_at = $finish->ceilMinute()->format('H:i');
                 }
 
                 $data->allowed_time = Carbon::parse($data->allowed_time)->format('H:i');
