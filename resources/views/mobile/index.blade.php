@@ -173,9 +173,9 @@
                     }
                 },
                 incrementTime(time) {
-                    let currentTime = moment(this.activePace.time, 'HH:mm');
+                    let currentTime = moment(this.finishTimeNow, 'HH:mm');
                     let newTime = currentTime.add(time, 'minutes').format('HH:mm');
-                    this.activePace.time = newTime;
+                    this.finishTimeNow = newTime;
                 },
                 handleGroupsModal() {
                     this.groupsModal = true;
@@ -224,7 +224,7 @@
 
                     axios.post(`/referee/${this.activePace.id}/edited`, {
                             _method: 'POST',
-                            time: moment(this.activePace.time, 'HH:mm').format('HH:mm:00'),
+                            time: moment(this.finishTimeNow, 'HH:mm').format('HH:mm:00'),
                         })
                         .then(response => {
                             this.getData();
@@ -465,7 +465,7 @@
                         <p class="border border-gray-300 shadow py-2 px-4 mt-1 rounded-lg bg-white text-gray-400" v-text='activePace?.finish_time'></p>
 
                         <p class="text-gray-400 mt-4">Finish Now</p>
-                        <p class="border border-green-700 shadow py-1.5 px-4 mt-1 rounded-lg bg-white text-green-700 font-bold text-xl text-center" v-text='activePace?.time'></p>
+                        <p class="border border-green-700 shadow py-1.5 px-4 mt-1 rounded-lg bg-white text-green-700 font-bold text-xl text-center" v-text='finishTimeNow'></p>
 
                         <div class="grid grid-cols-4 gap-2 mt-4 text-xs">
                             <button class="w-full border border-green-700 text-gray-700 py-2 px-1 text-center rounded-xl hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 cursor-pointer" v-on:click="incrementTime(-2)">
