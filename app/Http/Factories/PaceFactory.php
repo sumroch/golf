@@ -58,6 +58,7 @@ class PaceFactory
                         if ($pace->finish_at && $pace->status != 'unmonitored') {
 
                             $finish = Carbon::createFromFormat('Y-m-d H:i:s', $pace->finish_at, 'UTC')->setTimezone('Asia/Jakarta');
+                            $allow = Carbon::parse($finish->copy()->format('Y-m-d') . ' ' . $pace->time, 'Asia/Jakarta');
 
                             $pace->time_diff_float = $allow->diffInMinutes($finish, false);
                             $pace->time_diff = (int) ceil($pace->time_diff_float);
@@ -78,7 +79,7 @@ class PaceFactory
                                 $pace->finish_text_class = 'text-red-500';
                             }
 
-                            $pace->finish_at = $finish->format('H:i');
+                            $pace->finish_at = $finish->ceilMinute()->format('H:i');
 
                             $pace->progress_class = 'bg-gray-300/50';
                         }
@@ -182,7 +183,7 @@ class PaceFactory
                 $data->progress = 'overdue';
             }
 
-            $data->finish_at = $finish->format('H:i');
+            $data->finish_at = $finish->ceilMinute()->format('H:i');
         }
 
         return $data;
@@ -218,7 +219,7 @@ class PaceFactory
                 }
 
                 if ($data->finish_at) {
-                    $data->finish_at = $finish->format('H:i');
+                    $data->finish_at = $finish->ceilMinute()->format('H:i');
                 }
 
                 $data->allowed_time = Carbon::parse($data->allowed_time)->format('H:i');

@@ -50,7 +50,7 @@ class MobileFactories
                 'name' => $observer_type === 'group' ? 'Hole ' . $item->name : $item->name,
                 'time' => Carbon::parse($item->time)->format('H:i'),
                 'finish_at' => $finish ?? null,
-                'finish_time' => $finish ? $finish->format('H:i') : '-',
+                'finish_time' => $finish ? $finish->ceilMinute()->format('H:i') : '-',
                 'allowed_time' => Carbon::parse($item->allowed_time)->format('H:i'),
                 "status" => $item->status,
                 "progress" => $progress,

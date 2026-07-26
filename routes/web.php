@@ -11,6 +11,7 @@ use App\Http\Controllers\TournamentRoundController;
 use App\Http\Controllers\TournamentRoundPaceController;
 use App\Http\Controllers\TournamentRoundGroupController;
 use App\Http\Controllers\MobileAllAccessController;
+use App\Http\Controllers\TournamentTestController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [AuthController::class, 'login'])->name('login');
@@ -22,6 +23,7 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware(['auth', 'lock_system'])->group(function () {
+    Route::get('/reset-paces', [TournamentTestController::class, 'reset'])->name('reset-paces');
     Route::get('/sign-success', [MobileController::class, 'success'])->name('sign-success');
 
     Route::get('/referee', [MobileController::class, 'index'])->name('referee');
