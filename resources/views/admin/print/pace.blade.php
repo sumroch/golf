@@ -6,7 +6,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta http-equiv="X-UA-Compatible" content="ie=edge">
         <title>
-            @yield('page-title', 'My Golf App')
+            @yield('page-title', 'Golfinger Pace of Play')
         </title>
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -18,6 +18,9 @@
     <body class="font-inter">
 
         <div id="print-area">
+            <div class="w-full flex items-center justify-between">
+                <p class="text-xl font-bold">{{ $round?->tournament?->name . ' - Round ' . $round?->round_number }}</p>
+            </div>
             @foreach ($paces as $session => $tees)
                 @foreach ($tees as $teeIndex => $teeGroups)
                     <div class="w-full flex items-stretch justify-center gap-4 flex-wrap mb-4">
@@ -31,14 +34,14 @@
                                         <!-- head -->
                                         <thead class="text-black">
                                             <tr>
-                                                <th class="bg-white font-normal group-column">Time Allowed</th>
+                                                <th class="bg-white font-normal group-column text-start">Time Allowed</th>
                                                 <th class="bg-white font-normal">00:02:08</th>
                                                 @foreach ($teeIndex == 1 ? $tee_one : $tee_ten as $hole)
                                                     <th class="bg-white font-normal">({{ $hole->allowed_time }})</th>
                                                 @endforeach
                                             </tr>
                                             <tr>
-                                                <th class="bg-white group-column">START TEE {{ $teeIndex }}</th>
+                                                <th class="bg-white group-column text-start">START TEE {{ $teeIndex }}</th>
                                                 <th class="bg-white">Start</th>
                                                 @foreach ($teeIndex == 1 ? $tee_one : $tee_ten as $hole)
                                                     <th class="bg-white">{{ $hole->number }}</th>
@@ -48,7 +51,7 @@
                                         <tbody>
                                             @foreach ($groups as $key => $group)
                                                 <tr>
-                                                    <td class="bg-white group-column">{{ $group['name'] }}</td>
+                                                    <td class="bg-white group-column text-start">{{ $group['name'] }}</td>
                                                     <td class="bg-white">{{ $group['time'] }}</td>
                                                     @foreach ($group['paces'] as $pace)
                                                         <td class="bg-white">{{ $pace->time }}</td>

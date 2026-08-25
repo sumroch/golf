@@ -36,8 +36,12 @@ class MobileAllAccessController extends Controller
                 ? 'Hole ' . $hole->number
                 : $hole->name;
 
-            $hole->observer_number = $tournamentRound->observer_type === 'hole' ? $hole->number : $hole->name;
+            $hole->number = $tournamentRound->observer_type === 'hole'
+                ? $hole->number
+                : $hole->group_number;
 
+            $hole->observer_number = $tournamentRound->observer_type === 'hole' ? $hole->number : $hole->name;
+            $hole->observer_type = ucfirst($tournamentRound->observer_type);
             $observerTarget = 'All Access';
         }
 
@@ -71,7 +75,7 @@ class MobileAllAccessController extends Controller
             $mobileAllService->getListObserverReverse($tournamentRound->observer_type ?? null, $pace),
             $pace
         );
-        return response()->json(['data' => $pace ]);
+        return response()->json(['data' => $pace]);
     }
 
     public function edited($id, Request $request)
@@ -111,12 +115,21 @@ class MobileAllAccessController extends Controller
         ]);
     }
 
-    public function showMember($observer, MobileAllAccessService $mobileAllService)
+    public function showMember($observer, Request $request, MobileAllAccessService $mobileAllService)
     {
         $tournamentRound = TournamentRound::where('status', 'active')->whereHas('tournament', fn($x) => $x->where('status', 'active'))->first();
+        $data = $mobileAllService->getObserverMember($tournamentRound->observer_type, $tournamentRound->id, $observer);
 
-        return response()->json([
-            'data' => MobileFactories::showMember($mobileAllService->getObserverMember($tournamentRound->observer_type, $tournamentRound->id, $observer), $tournamentRound->observer_type, $observer),
-        ]);
+        $response = [
+            'data' => [
+                'member' => MobileFactories::showMember($data, $tournamentRound->observer_type, $observer),
+            ],
+        ];
+
+        if ($request->missing('check_update')) {
+            $response['data']['groups'] = MobileFactories::groups($data, $tournamentRound->observer_type);
+        }
+
+        return response()->json($response);
     }
 }

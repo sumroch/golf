@@ -109,22 +109,18 @@ class MobileService
         $session = Carbon::now('Asia/Jakarta')->greaterThan(Carbon::parse('13:30', 'Asia/Jakarta')) ? 'afternoon' : 'morning';
 
         return TournamentPace::when($duty->observer_type === 'hole', function ($query) use ($duty, $session) {
-            $query->select('tournament_paces.id', 'groups.name as name', 'tournament_paces.time', 'hole_id', 'group_id', 'groups.session', 'tournament_paces.finish_at', 'tournament_paces.status', 'tournament_holes.allowed_time', 'tournament_holes.par')
+            $query->select('tournament_paces.id', 'groups.name as name', 'tournament_paces.time', 'hole_id', 'groups.tee', 'group_id', 'groups.session', 'groups.group_number', 'tournament_paces.finish_at', 'tournament_paces.status', 'tournament_holes.allowed_time', 'tournament_holes.par')
                 ->leftJoin('groups', 'tournament_paces.group_id', '=', 'groups.id')
                 ->leftJoin('tournament_holes', 'tournament_paces.hole_id', '=', 'tournament_holes.id')
                 ->where('hole_id', $duty->observer_id)
                 ->where('tournament_paces.tournament_round_id', $duty->tournament_round_id)
-                // ->where('groups.session', $session)
-                // ->whereNotIn('tournament_paces.status', ['finish', 'unmonitored'])
                 ->orderBy('tournament_paces.time', 'asc');
         }, function ($query) use ($duty, $session) {
             $query->select('tournament_paces.id', 'tournament_holes.number as name', 'tournament_paces.time', 'hole_id', 'group_id', 'groups.session', 'tournament_paces.finish_at', 'tournament_paces.status', 'tournament_holes.allowed_time', 'tournament_holes.par')
                 ->leftJoin('tournament_holes', 'tournament_paces.hole_id', '=', 'tournament_holes.id')
                 ->leftJoin('groups', 'tournament_paces.group_id', '=', 'groups.id')
                 ->where('group_id', $duty->observer_id)
-                // ->where('groups.session', $session)
                 ->where('tournament_paces.tournament_round_id', $duty->tournament_round_id)
-                // ->whereNotIn('tournament_paces.status', ['finish', 'unmonitored'])
                 ->orderBy('tournament_holes.number', 'asc');
         })
             ->get();

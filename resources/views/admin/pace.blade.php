@@ -66,15 +66,14 @@
                                     <!-- head -->
                                     <thead class="text-black">
                                         <tr>
-                                            <th class="bg-white font-normal" colspan="2">Time Allowed</th>
+                                            <th class="bg-white font-normal text-start">Time Allowed</th>
                                             <th class="bg-white font-normal">00:02:08</th>
                                             @foreach ($teeIndex == 1 ? $tee_one : $tee_ten as $hole)
                                                 <th class="bg-white font-normal">({{ $hole->allowed_time }})</th>
                                             @endforeach
                                         </tr>
                                         <tr>
-                                            <th class="bg-white">Group</th>
-                                            <th class="bg-white">START TEE {{ $teeIndex }}</th>
+                                            <th class="bg-white text-start">START TEE {{ $teeIndex }}</th>
                                             <th class="bg-white">Start</th>
                                             @foreach ($teeIndex == 1 ? $tee_one : $tee_ten as $hole)
                                                 <th class="bg-white">{{ $hole->number }}</th>
@@ -84,7 +83,6 @@
                                     <tbody>
                                         @foreach ($groups as $key => $group)
                                             <tr>
-                                                <th class="bg-white font-normal">{{ $key + 1 }}</th>
                                                 <th class="bg-white w-50 font-normal">
                                                     <div class="flex items-center justify-between relative">
                                                         <span>{{ $group['name'] }}</span>

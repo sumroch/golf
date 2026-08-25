@@ -67,7 +67,7 @@
         @endif
 
         <div class="w-full flex items-center justify-end no-print my-4 md:my-0">
-            <a class="bg-gray-100 rounded-lg me-5 px-8 py-2 text-sm shadow border-2 border-gray-300 cursor-pointer hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 cursor-pointer" href="{{ route('dashboard-table-print', $round['id']) }}" target="_blank">
+            <a class="bg-gray-100 rounded-lg me-5 px-8 py-2 text-sm shadow border-2 border-gray-300 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2 cursor-pointer" href="{{ route('dashboard-table-print', $round['id']) }}" target="_blank">
                 Print
             </a>
             <a class="bg-green-700 rounded-lg text-white p-1 text-sm cursor-pointer hover:bg-green-800 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2" href="{{ route('dashboard', $round['id']) }}">
@@ -102,15 +102,14 @@
                                     <!-- head -->
                                     <thead class="text-black">
                                         <tr>
-                                            <th class="bg-white font-normal border-b-transparent" colspan="2">Time Allowed</th>
+                                            <th class="bg-white font-normal border-b-transparent text-start">Time Allowed</th>
                                             <th class="bg-white border-s border-s-gray-300/50 border-b-transparent font-normal">{{ $teeIndex == 1 ? $total_one : $total_ten }}</th>
                                             @foreach ($teeIndex == 1 ? $tee_one : $tee_ten as $hole)
                                                 <th class="bg-white border-s border-s-gray-300/50 border-b-transparent font-normal">({{ $hole->allowed_time }})</th>
                                             @endforeach
                                         </tr>
                                         <tr>
-                                            <th class="bg-white border-b-transparent">Group</th>
-                                            <th class="bg-white border-s border-s-gray-300/50 border-b-transparent">
+                                            <th class="bg-white border-b-transparent text-start">
                                                 @if ($keyGroups == 0)
                                                     START TEE {{ $teeIndex }}
                                                 @else
@@ -126,8 +125,7 @@
                                     <tbody>
                                         @foreach ($groups as $key => $group)
                                             <tr>
-                                                <td class="bg-white border-b-transparent">{{ $key + 1 }}</td>
-                                                <td class="bg-white border-s border-s-gray-300/50 border-b-transparent w-50">
+                                                <td class="bg-white border-b-transparent w-50">
                                                     <div class="flex items-center justify-between relative">
                                                         <span>{{ $group['name'] }}</span>
 
@@ -155,7 +153,7 @@
                                                     <td class="{{ $pace->progress_class }} border-s border-s-gray-300/50 border-b-transparent relative">
                                                         {{ $pace->time }}
                                                         @if ($pace->finish_at)
-                                                            <div class="font-bold h-2 w-2 rounded-full bg-black absolute top-2 right-2 {{ $pace->finish_class }}"></div>
+                                                            <div class="font-bold h-3 w-3 rounded-full bg-black absolute top-2 right-2 {{ $pace->finish_class }}"></div>
 
                                                             <span class="text-xs {{ $pace->finish_text_class }}">
                                                                 ({{ $pace->time_diff_integer }})

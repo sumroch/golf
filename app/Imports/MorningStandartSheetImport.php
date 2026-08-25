@@ -71,6 +71,7 @@ class MorningStandartSheetImport implements ToCollection, HasReferencesToOtherSh
         foreach ($this->groups as $groupData) {
             $group = Group::create([
                 'name' => $groupData['name'],
+                'group_number'   => explode(' ', $groupData['name'])[1] ?? null,
                 'time' => $groupData['time'],
                 'tee' => $groupData['tee'],
                 'session' => $groupData['session'],

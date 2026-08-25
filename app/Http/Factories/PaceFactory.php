@@ -71,8 +71,8 @@ class PaceFactory
                                 $pace->finish_text_class = 'text-green-600';
                             } elseif ($pace->time_diff_float > 0 && $pace->time_diff_float <= 3) {
                                 $pace->progress = 'late';
-                                $pace->finish_class = 'bg-yellow-400';
-                                $pace->finish_text_class = 'text-yellow-400';
+                                $pace->finish_class = 'bg-orange-400';
+                                $pace->finish_text_class = 'text-orange-400';
                             } elseif ($pace->time_diff_float > 3) {
                                 $pace->progress = 'overdue';
                                 $pace->finish_class = 'bg-red-500';
@@ -91,7 +91,7 @@ class PaceFactory
                         }
 
                         if ($pace->status == 'unmonitored') {
-                            $pace->progress_class = 'bg-red-700';
+                            $pace->progress_class = 'bg-red-500';
                             $pace->finish_at = null;
                         }
 
@@ -140,13 +140,29 @@ class PaceFactory
 
     public static function byGroup($datas)
     {
-        $result = collect($datas)
-            ->map(function ($data) {
+        return $datas
+        ->map(function ($data) {
 
                 $data->keys = $data->group_name;
                 $data->name = 'Hole ' . $data->hole_number;
 
                 return $data;
+            })
+            ->groupBy('session')
+            ->map(function ($itemss) {
+                return $itemss->groupBy('tee')
+                    ->values()
+                    ->flatMap(function ($itemss) {
+                        return $itemss->values()->map(function ($item, $index) use ($itemss) {
+                            $item->head = $index === 0;
+                            $item->tail = $index === $itemss->count() - 1;
+
+                            return $item;
+                        });
+                    });
+            })
+            ->flatMap(function ($items) {
+                return $items;
             })
             ->groupBy('group_name')
             ->map(function ($items) {
@@ -158,7 +174,6 @@ class PaceFactory
                     });
             })
             ->toArray();
-        return $result;
     }
 
     protected static function formatPaceByData($data)

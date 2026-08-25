@@ -48,6 +48,7 @@ class MorningShotgunSheetImport implements OnEachRow, WithHeadingRow, WithValida
             $this->groupCache[$data['group']] = Group::firstOrCreate(
                 [
                     'name' => $data['group'],
+                    'group_number'   => explode(' ', $data['group'])[1] ?? null,
                     'time'  => $this->options['round']->morning,
                     'tee'   => $data['tee'],
                     'session'   => 'morning',

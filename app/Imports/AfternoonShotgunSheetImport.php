@@ -49,6 +49,7 @@ class AfternoonShotgunSheetImport implements OnEachRow, WithHeadingRow, WithVali
                     'name' => $data['group'],
                     'time'  => $this->options['round']->afternoon,
                     'tee'   => $data['tee'],
+                    'group_number'   => explode(' ', $data['group'])[1] ?? null,
                     'session'   => 'afternoon',
                     'tournament_round_id' => $this->options['round']->id,
                 ],

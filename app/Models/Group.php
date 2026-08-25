@@ -13,6 +13,7 @@ class Group extends Model
     protected $table = 'groups';
     protected $fillable = [
         'name',
+        'group_number',
         'time',
         'tee',
         'session',

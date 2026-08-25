@@ -49,6 +49,7 @@ class MorningSheetImport implements OnEachRow, WithHeadingRow, WithValidation, S
             $this->groupCache[$data['group']] = Group::firstOrCreate(
                 [
                     'name' => $data['group'],
+                    'group_number'   => explode(' ', $data['group'])[1] ?? null,
                     'time'  => $data['time'],
                     'tee'   => $data['tee'],
                     'session'   => 'morning',

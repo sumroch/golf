@@ -31,12 +31,13 @@ class TournamentRoundController extends Controller
             ->with(['groups.players', 'tournament.course', 'tournament.rounds'])
             ->first();
 
-        $tournamentByHole = $paceService->getPacesByHoles($round, $request->input('session'), $request->input('history', 'hole'));
+        $tournamentByHole = $paceService->getPacesByHoles($round, $request->input('session'), $request->input('history', 'hole'), true);
         $tournamentByTee = $paceService->getPacesByTee($round, $request->input('tee'));
 
         return $this->apiResponseSuccess(
             [
                 'round' => TournamentFactory::dashboard($tournamentRound),
+                'groups' => $tournamentRound->groups,
                 'holes' => $request->history == 'hole' ? PaceFactory::byHole($tournamentByHole) : PaceFactory::byGroup($tournamentByHole),
                 'tees' => in_array($tournamentRound->status, ['finish', 'active', 'pause']) ? PaceFactory::byTee($tournamentByTee) : [],
                 'updated_at' => now()->timezone($tournamentRound->tournament->timezone)->format('Y-m-d H:i'),

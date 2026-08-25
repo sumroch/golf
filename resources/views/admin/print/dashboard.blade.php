@@ -6,7 +6,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta http-equiv="X-UA-Compatible" content="ie=edge">
         <title>
-            @yield('page-title', 'My Golf App')
+            @yield('page-title', 'Golfinger Pace of Play')
         </title>
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -18,6 +18,9 @@
     <body class="font-inter">
 
         <div id="print-area">
+            <div class="w-full flex items-center justify-between">
+                <p class="text-xl font-bold uppercase">{{ $round['name'] . ' - Round ' . $round['round_number'] }}</p>
+            </div>
             @foreach ($paces as $session => $tees)
                 @foreach ($tees as $teeIndex => $teeGroups)
                     <div class="w-full flex items-stretch justify-center gap-4 flex-wrap mb-4">
@@ -45,14 +48,14 @@
                                         <!-- head -->
                                         <thead class="text-black">
                                             <tr>
-                                                <th class="bg-white font-normal group-column border-s border-s-gray-300/50 border-b-transparent">Time Allowed</th>
+                                                <th class="bg-white font-normal group-column border-s border-s-gray-300/50 border-b-transparent text-start">Time Allowed</th>
                                                 <th class="bg-white font-normal border-s border-s-gray-300/50 border-b-transparent">{{ $teeIndex == 1 ? $total_one : $total_ten }}</th>
                                                 @foreach ($teeIndex == 1 ? $tee_one : $tee_ten as $hole)
                                                     <th class="bg-white font-normal border-s border-s-gray-300/50 border-b-transparent">({{ $hole->allowed_time }})</th>
                                                 @endforeach
                                             </tr>
                                             <tr>
-                                                <th class="bg-white group-column border-s border-s-gray-300/50 border-b-transparent">
+                                                <th class="bg-white group-column border-s border-s-gray-300/50 border-b-transparent text-start">
                                                     @if ($keyGroups == 0)
                                                         START TEE {{ $teeIndex }}
                                                     @else
@@ -68,15 +71,15 @@
                                         <tbody>
                                             @foreach ($groups as $key => $group)
                                                 <tr>
-                                                    <td class="bg-white group-column border-s border-s-gray-300/50 border-b-transparent">{{ $group['name'] }}</td>
+                                                    <td class="bg-white group-column border-s border-s-gray-300/50 border-b-transparent text-start">{{ $group['name'] }}</td>
                                                     <td class="bg-white border-s border-s-gray-300/50 border-b-transparent">{{ $group['time'] }}</td>
                                                     @foreach ($group['paces'] as $pace)
                                                         <td class="{{ $pace->progress_class }} border-s border-s-gray-300/50 border-b-transparent relative p-1">
                                                             {{ $pace->time }}
                                                             @if ($pace->finish_at)
-                                                                <div class="font-bold h-2 w-2 rounded-full bg-black absolute top-2 right-2 {{ $pace->finish_class }}"></div>
+                                                                <div class="font-bold h-2 w-2 rounded-full bg-black absolute top-1 right-1 {{ $pace->finish_class }}"></div>
 
-                                                                <span class="text-xs {{ $pace->finish_text_class }}">
+                                                                <span class="text-[8px] {{ $pace->finish_text_class }}">
                                                                     ({{ $pace->time_diff_integer }})
                                                                 </span>
                                                             @endif

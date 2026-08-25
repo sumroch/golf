@@ -13,6 +13,13 @@ class MobileAllAccessService
 {
     public function getAllObserver($tournamentRoundId, $observerType): ?object
     {
+        // $group = Group::get();
+        // foreach ($group as $g) {
+        //     $g->group_number = (int)(explode(' ', $g->name)[1] ?? null);
+        //     // dd($g->group_number);
+        //     $g->save();
+        // }
+
         return $observerType == 'hole'
             ? TournamentHole::where('tournament_round_id', $tournamentRoundId)->get()
             : Group::where('tournament_round_id', $tournamentRoundId)->get();
@@ -61,23 +68,19 @@ class MobileAllAccessService
     {
         $session = Carbon::now('Asia/Jakarta')->greaterThan(Carbon::parse('12:30', 'Asia/Jakarta')) ? 'afternoon' : 'morning';
 
-        return TournamentPace::when($observerType === 'hole', function ($query) use ($tournamentRoundId, $observerId, $session) {
-            $query->select('tournament_paces.id', 'groups.name as name', 'tournament_paces.time', 'hole_id', 'group_id', 'groups.session', 'tournament_paces.finish_at', 'tournament_paces.status', 'tournament_holes.allowed_time', 'tournament_holes.par')
+        return TournamentPace::when($observerType === 'hole', function ($query) use ($tournamentRoundId, $observerId) {
+            $query->select('tournament_paces.id', 'groups.name as name', 'tournament_paces.time', 'hole_id', 'groups.tee', 'group_id', 'groups.session', 'groups.group_number', 'tournament_paces.finish_at', 'tournament_paces.status', 'tournament_holes.allowed_time', 'tournament_holes.par')
                 ->leftJoin('groups', 'tournament_paces.group_id', '=', 'groups.id')
                 ->leftJoin('tournament_holes', 'tournament_paces.hole_id', '=', 'tournament_holes.id')
                 ->where('hole_id', $observerId)
                 ->where('tournament_paces.tournament_round_id', $tournamentRoundId)
-                // ->where('groups.session', $session)
-                // ->whereNotIn('tournament_paces.status', ['finish', 'unmonitored'])
                 ->orderBy('tournament_paces.time', 'asc');
-        }, function ($query) use ($tournamentRoundId, $observerId, $session) {
-            $query->select('tournament_paces.id', 'tournament_holes.number as name', 'tournament_paces.time', 'hole_id', 'group_id', 'groups.session', 'tournament_paces.finish_at', 'tournament_paces.status', 'tournament_holes.allowed_time', 'tournament_holes.par')
+        }, function ($query) use ($tournamentRoundId, $observerId) {
+            $query->select('tournament_paces.id', 'tournament_holes.number as name', 'tournament_paces.time', 'hole_id', 'groups.tee', 'group_id', 'groups.session', 'groups.group_number', 'tournament_paces.finish_at', 'tournament_paces.status', 'tournament_holes.allowed_time', 'tournament_holes.par')
                 ->leftJoin('tournament_holes', 'tournament_paces.hole_id', '=', 'tournament_holes.id')
                 ->leftJoin('groups', 'tournament_paces.group_id', '=', 'groups.id')
                 ->where('group_id', $observerId)
-                // ->where('groups.session', $session)
                 ->where('tournament_paces.tournament_round_id', $tournamentRoundId)
-                // ->whereNotIn('tournament_paces.status', ['finish', 'unmonitored'])
                 ->orderBy('tournament_holes.number', 'asc');
         })
             ->get();

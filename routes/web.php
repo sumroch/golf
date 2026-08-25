@@ -15,9 +15,9 @@ use App\Http\Controllers\TournamentTestController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [AuthController::class, 'login'])->name('login');
+Route::get('/login', [AuthController::class, 'login'])->name('login-page');
 
 Route::middleware('guest')->group(function () {
-    Route::get('/login', [AuthController::class, 'login'])->name('login-page');
     Route::post('/authenticate', [AuthController::class, 'authenticate'])->name('authenticate');
     Route::post('/authenticate-qr', [AuthController::class, 'authenticateQr'])->name('authenticate-qr');
 });
@@ -44,7 +44,7 @@ Route::middleware(['auth', 'lock_system'])->group(function () {
     Route::middleware(['role:superadmin|admin|technician|director|chief'])->prefix('admin')->group(function () {
         Route::middleware('check_tournament')->group(function () {
             Route::get('/group/template-download', [TournamentRoundGroupController::class, 'downloadTemplate'])->name('round.group.template-download');
-    
+
             Route::get('/dashboard/{round}', [TournamentRoundController::class, 'dashboard'])->name('dashboard');
             Route::get('/dashboard-table/{round}', [TournamentRoundController::class, 'dashboardTable'])->name('dashboard-table');
             Route::get('/dashboard-table-print/{round}', [TournamentRoundController::class, 'dashboardTablePrint'])->name('dashboard-table-print');
@@ -53,32 +53,33 @@ Route::middleware(['auth', 'lock_system'])->group(function () {
             Route::get('/pace/{round}', [TournamentRoundPaceController::class, 'pace'])->name('round.pace');
             Route::get('/pace-print/{round}', [TournamentRoundPaceController::class, 'pacePrint'])->name('round.pace-print');
             Route::get('/referee/{round}', [TournamentRoundController::class, 'referee'])->name('round.referee');
-    
+
             Route::get('/start/{round}', [TournamentRoundActionController::class, 'start'])->name('round.start');
             Route::get('/pause/{round}', [TournamentRoundActionController::class, 'pause'])->name('round.pause');
             Route::get('/resume/{round}', [TournamentRoundActionController::class, 'resume'])->name('round.resume');
             Route::get('/stop/{round}', [TournamentRoundActionController::class, 'stop'])->name('round.stop');
-    
+            Route::get('/reset/{round}', [TournamentRoundActionController::class, 'reset'])->name('round.reset');
+
             Route::post('/setup/{round}', [TournamentRoundController::class, 'storeSetup'])->name('round.setup.store');
             Route::post('/group/{round}', [TournamentRoundGroupController::class, 'storeGroup'])->name('round.group.store');
             Route::post('/referee/{round}', [TournamentRoundController::class, 'storeReferee'])->name('round.referee.store');
-    
+
             Route::put('/group/{round}/setting', [TournamentRoundGroupController::class, 'updateHole'])->name('round.group.setting');
-    
+
             Route::delete('/group/{round}', [TournamentRoundGroupController::class, 'deleteGroup'])->name('round.group.delete');
         });
-    
-    
+
+
         Route::prefix('master')->group(function () {
             Route::get('/tournament/active/{tournament}', [TournamentController::class, 'active'])->name('tournament.active');
             Route::resource('/tournament', TournamentController::class)->only(['index', 'create', 'store', 'update', 'edit', 'destroy'])->names('tournament');
             Route::resource('/referee', RefereeController::class)->only(['index', 'store', 'update', 'destroy'])->names('referee');
-    
+
             Route::get('/users', function () {
                 return view('admin.master.users');
             });
         });
-    
+
         Route::prefix('grandmaster')->middleware('role:superadmin|admin')->group(function () {
             Route::resource('/courses-and-holes', CourseController::class)
                 ->names('course')
@@ -91,9 +92,8 @@ Route::middleware(['auth', 'lock_system'])->group(function () {
                     'update',
                     'destroy'
                 ]);
-    
+
             Route::resource('/setting', SettingController::class)->names('setting')->middleware('role:superadmin');
         });
     });
 });
-
