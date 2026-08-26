@@ -60,7 +60,7 @@ class MobileController extends Controller
 
             $hole->observer_type = ucfirst($hole->observer_type);
             if ($check) {
-                $observerTarget = $key == 0 ? $hole->observer->number : $observerTarget . ', ' . $hole->observer->number;
+                $observerTarget = $key == 0 ? $hole->observer->number : ($key < 2 ? $observerTarget . ', ' . $hole->observer->number : $observerTarget);
             } else {
                 $observerTarget = 'All Access';
             }
@@ -76,7 +76,7 @@ class MobileController extends Controller
                 'holes' => $holes,
                 'groups' => $tournamentRound->groups ?? [],
                 'course_name' => $tournamentRound->tournament->course->name,
-                'observer_target' => '(' . $observerType . ' ' . $observerTarget . ')',
+                'observer_target' => '(' . $observerType . ' ' . $observerTarget . ' ' . (count($holes) > 2 ? '...' : '') . ')',
             ]);
     }
 
@@ -164,6 +164,11 @@ class MobileController extends Controller
 
         if ($request->missing('check_update')) {
             $response['data']['groups'] = MobileFactories::groups($data, $duty->observer_type);
+        }
+
+        if ($request->filled('last_observer')) {
+            $last = $mobileService->getUserDuties($request->input('last_observer'), $request->user());
+            $response['data']['lastMember'] = MobileFactories::showMember($mobileService->getObserverMember($last), $last->observer_type, $last->id);
         }
 
         return response()->json($response);

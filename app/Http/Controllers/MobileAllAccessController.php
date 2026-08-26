@@ -130,6 +130,11 @@ class MobileAllAccessController extends Controller
             $response['data']['groups'] = MobileFactories::groups($data, $tournamentRound->observer_type);
         }
 
+        if ($request->filled('last_observer')) {
+            $last = $mobileAllService->getObserverMember($tournamentRound->observer_type, $tournamentRound->id, $request->input('last_observer'));
+            $response['data']['lastMember'] = MobileFactories::showMember($last, $tournamentRound->observer_type, $request->input('last_observer'));
+        }
+
         return response()->json($response);
     }
 }

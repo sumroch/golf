@@ -58,6 +58,7 @@
                     prevObserverDisable: true,
                     oldObserverKey: 0,
                     member: [],
+                    lastMember: [],
                     memberHeadTail: [],
                     collapseActive: false,
                     groupsModal: false,
@@ -81,14 +82,39 @@
             beforeUnmount() {
                 stopClock();
             },
+            computed: {
+                lastObserver() {
+                    let findIndexPace = this.lastMember.findIndex((item) => item.group_id == this.activePace?.group_id);
+
+                    if (this.activeObserverKey == 0 || findIndexPace == -1 || !this.lastMember[findIndexPace]?.finish_time || this.lastMember[findIndexPace]?.finish_time == '-') {
+                        return 'No Observer';
+                    }
+
+                    let start = moment(this.lastMember[findIndexPace]?.finish_time, 'HH:mm');
+                    let end = moment(this.activePace?.time, 'HH:mm');
+                    let diffMinutes = end.diff(start, 'minutes');
+
+                    console.log(start, end, diffMinutes);
+
+                    return this.observer[this.activeObserverKey - 1]?.name +
+                        ' Flag Time in ' +
+                        this.lastMember[findIndexPace]?.finish_time +
+                        ' (' + (diffMinutes > 0 ? '+' : '') + diffMinutes + ')';
+                }
+            },
             methods: {
                 getData() {
                     this.preloader(true);
-                    axios.get(`/referee/${this.activeObserver}`)
+                    axios.get(`/referee/${this.activeObserver}`, {
+                            params: {
+                                last_observer: this.observer[this.activeObserverKey == 0 ? 0 : this.activeObserverKey - 1]?.id ?? null
+                            }
+                        })
                         .then(response => {
                             this.member = response.data.data.member;
                             this.memberHeadTail = response.data.data.groups;
 
+                            this.lastMember = response?.data?.data?.lastMember ?? [];
                             this.oldObserverKey = this.activeObserverKey;
 
                             this.activePaceKey = this.findNextValidIndex(this.member, -1, 'next')
@@ -102,10 +128,16 @@
                         });
                 },
                 checkUpdate() {
-                    axios.get(`/referee/${this.activeObserver}?check_update=1`)
+                    axios.get(`/referee/${this.activeObserver}?check_update=1`, {
+                            params: {
+                                check_update: 1,
+                                last_observer: this.observer[this.activeObserverKey == 0 ? 0 : this.activeObserverKey - 1]?.id ?? null
+                            }
+                        })
                         .then(response => {
                             this.member = response.data.data.member;
                             this.activePace = response.data.data.member[this.activePaceKey];
+                            this.lastMember = response?.data?.data?.lastMember ?? [];
                         })
                         .catch(error => {
                             console.error('There was an error!', error);
@@ -226,6 +258,9 @@
                 handleJumpPaceModal() {
                     jump_pace_modal.showModal();
                 },
+                handleUnmonitoredModal() {
+                    unmonitored_modal.showModal();
+                },
                 handleJumpObserverAction() {
                     console.log(this.selectedObserver);
                     this.changeActiveObserver(this.selectedObserver);
@@ -289,10 +324,12 @@
                             _method: 'POST',
                         })
                         .then(response => {
+                            unmonitored_modal.close();
                             this.getData();
                             this.changeActivePaceArrow('next');
                         })
                         .catch(error => {
+                            unmonitored_modal.close();
                             this.preloader(false);
                         });
                 },
@@ -337,11 +374,11 @@
                 </div>
             </div>
 
-           <div class="w-full px-3 py-2 flex items-center justify-between">
+            <div class="w-full px-3 py-2 flex items-center justify-between">
                 <div>
                     <h2 class="text-lg font-bold text-start text-green-700 m-0 capitalize">{{ auth()->user()->name }} <span class="text-base">{{ $observer_target }}</span></h2>
-                    <hr class="border mt-1 border-green-700">
-                    <h2 class="text-lg text-start text-green-700 m-0">{{ $course_name }}</h2>
+                    {{-- <hr class="border mt-1 border-green-700">
+                    <h2 class="text-lg text-start text-green-700 m-0">{{ $course_name }}</h2> --}}
                 </div>
                 <div class="flex items-center justify-center">
                     <img class="w-8 me-6 h-auto cursor-pointer" src="{{ asset('img/icon/conference-green.svg') }}" alt="conference" v-on:click="handleGroupsModal">
@@ -375,34 +412,42 @@
 
             {{-- Header Section --}}
 
-            <section class="w-full flex flex-wrap items-center justify-between p-1 mt-2 px-3">
-                <div class="w-full rounded-xl shadow-lg py-2 px-3 pb-3 text-center bg-green-700">
-                    <div class="flex items-start justify-between text-green-700">
-                        <div class="text-start">
-                            <p class="text-2xl text-white font-bold" v-text="activeObserverName"></p>
-                            <p class="text-lg text-white" v-text="activePace?.par"></p>
+            <section class="w-full grid grid-cols-2 items-center justify-between p-1 px-3">
+                <div class="w-full rounded-s-xl bg-green-700 py-2">
+                    <div class="px-3 text-center bg-green-700 border-e border-white">
+                        <div class="flex items-center">
+                            <p class="font-bold text-white me-2" v-text="activeObserverName"></p>
+                            <p class="text-sm text-white" v-text="activePace?.par"></p>
                         </div>
-                        <div class="text-lg text-end">
-                            <p class="text-2xl font-bold text-white">Time Allowed</p>
-                            <h2 class="text-4xl font-bold text-white" v-text="activePace?.allowed_time"></h2>
+                        <div class="flex items-center">
+                            <p class="text-white me-2 text-sm">Time Allowed</p>
+                            <p class="font-bold text-white" v-text="activePace?.allowed_time"></p>
                         </div>
                     </div>
                 </div>
 
-                <div class="w-full rounded-xl shadow-lg py-2 px-3 pb-3 text-center bg-green-700 mt-3">
-                    <div class="flex items-center justify-between text-green-700">
-                        <p class="text-2xl text-white font-bold" v-text="activePace?.name"></p>
-                        <div class="text-lg text-end">
-                            <p class="text-2xl font-bold text-white">Target Time</p>
-                            <h2 class="text-4xl font-bold text-white" v-text="activePace?.time"></h2>
+                <div class="w-full rounded-e-xl bg-green-700 py-2">
+                    <div class="px-3 text-center bg-green-700 border-s border-white">
+                        <div class="flex items-center">
+                            <p class="font-bold text-white me-2" v-text="activePace?.name"></p>
+                            <p class="text-sm text-white" v-text="activePace?.par"></p>
+                        </div>
+                        <div class="flex items-center">
+                            <p class="text-white me-2 text-sm">Target Time</p>
+                            <p class="font-bold text-white" v-text="activePace?.time"></p>
                         </div>
                     </div>
                 </div>
             </section>
 
+            <section class="w-full flex items-center px-3.5 my-1">
+                <img class="h-auto w-2.5 me-2" src="{{ asset('img/flag.png') }}" alt="Play Button">
+                <p class="text-xs" v-text="lastObserver"></p>
+            </section>
+
             {{-- Fixed Button Section --}}
 
-            <section class="w-full max-w-[500px] flex items-center justify-between p-1 mt-2 fixed bottom-14 px-3">
+            <section class="w-full max-w-[500px] flex items-center justify-between p-1 px-3">
                 <div class="w-1/2 pe-1.5">
                     <div class="w-full rounded-xl shadow-lg pb-3 pt-1 text-center bg-white border border-green-700">
                         <p class="text-center mb-1 text-lg text-green-700 font-bold" v-text="activeObserverType"></p>
@@ -462,14 +507,14 @@
                 </div>
             </section>
 
-            <section class="w-full flex items-center justify-center mb-6 mt-4">
+            <section class="w-full flex items-center justify-center mb-4">
                 <h1 class="max-[350px]:text-[4.5rem] max-[400px]:text-[5rem] max-[500px]:text-[5.5rem] max-[640px]:text-[6rem] sm:text-8xl md:text-8xl font-bold" id="clock">
                     <span class="hm me-1"></span>
                     <span class="text-5xl sec">27</span>
                 </h1>
             </section>
 
-            <section class="w-full flex items-end justify-around mb-12" v-if="activePace">
+            <section class="w-full flex items-end justify-around" v-if="activePace">
                 <div class="text-center" v-if="activePace?.status !== 'finish' && activePace?.status !== 'unmonitored'">
                     <button class="w-25 rounded-full border border-green-700 p-8 bg-white shadow-lg active:scale-95 hover:bg-green-100 transition cursor-pointer" v-on:click="submitFinish">
                         <img class="w-full h-auto" src="{{ asset('img/flag.png') }}" alt="Play Button">
@@ -483,8 +528,12 @@
                     </button>
                     <p class="mt-2">EDIT</p>
                 </div>
-
             </section>
+
+            <button class="w-auto px-3 flex items-center mt-2 py-1 rounded-lg text-white bg-red-700 shadow-lg active:scale-95 hover:bg-red-600 transition cursor-pointer" v-on:click="handleUnmonitoredModal">
+                <img class="h-auto w-4 me-2" src="{{ asset('img/icon/unmonitored-flag.svg') }}">
+                <p class="text-sm">UNMONITORED</p>
+            </button>
 
             <section class="w-full max-w-[500px] flex items-center justify-center flex-wrap bottom-0 absolute">
                 <div class="w-full rounded-none bg-base-100 border-base-300 border">
@@ -526,6 +575,37 @@
                         </button>
                         <form method="dialog">
                             <button class="w-50 mt-2 border border-green-700 text-green-700 py-2 px-4 rounded-xl hover:bg-green-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 cursor-pointer">
+                                Cancel
+                            </button>
+                        </form>
+                    </div>
+
+                </div>
+                <form class="modal-backdrop" method="dialog">
+                    <button>close</button>
+                </form>
+            </dialog>
+
+            <dialog class="modal" id="unmonitored_modal">
+                <div class="modal-box rounded-3xl">
+                    <div class="flex items-center justify-center my-4">
+                        <div class="bg-red-500 rounded-xl w-20 h-20 flex items-center justify-center">
+                            <img class="w-max-full h-auto mx-auto" src="{{ asset('img/icon/unmonitored-flag.svg') }}" alt="">
+                        </div>
+                    </div>
+                    <h3 class="text-xl font-bold text-center mb-4 text-red-600">UNMONITORED</h3>
+
+                    <div class="flex items-center justify-between w-50 mx-auto mb-6">
+                        <p v-text="activePace?.name"></p>
+                        <p v-text="activeObserverName"></p>
+                    </div>
+
+                    <div class="text-center mt-4">
+                        <button class="w-50 bg-red-600 text-white py-2 px-4 rounded-xl hover:bg-red-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 cursor-pointer" v-on:click="unmonitoredTimer()">
+                            Confirm
+                        </button>
+                        <form method="dialog">
+                            <button class="w-50 mt-2 border border-gray-400 py-2 px-4 rounded-xl hover:bg-gray-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 cursor-pointer">
                                 Cancel
                             </button>
                         </form>

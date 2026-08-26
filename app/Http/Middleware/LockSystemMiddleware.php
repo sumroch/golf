@@ -21,7 +21,7 @@ class LockSystemMiddleware
             return $next($request);
 
 
-        $setting = Setting::whereDate('date_start', '<=', now())->whereDate('date_end', '>=', now())->first();
+        $setting = Setting::whereDate('date_start', '<=', now()->timezone('Asia/Jakarta'))->whereDate('date_end', '>=', now()->timezone('Asia/Jakarta'))->first();
 
         if (!$setting) {
 

@@ -141,7 +141,7 @@ class PaceFactory
     public static function byGroup($datas)
     {
         return $datas
-        ->map(function ($data) {
+            ->map(function ($data) {
 
                 $data->keys = $data->group_name;
                 $data->name = 'Hole ' . $data->hole_number;
