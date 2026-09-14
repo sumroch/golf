@@ -82,39 +82,29 @@
             beforeUnmount() {
                 stopClock();
             },
-            computed: {
-                lastObserver() {
-                    let findIndexPace = this.lastMember.findIndex((item) => item.group_id == this.activePace?.group_id);
-
-                    if (this.activeObserverKey == 0 || findIndexPace == -1 || !this.lastMember[findIndexPace]?.finish_time || this.lastMember[findIndexPace]?.finish_time == '-') {
-                        return 'No Observer';
+            watch: {
+                'activePace.id': {
+                    handler(newValue, oldValue) {
+                        if (newValue != oldValue) {
+                            axios.get(`/access/last/${this.activePace.id}`)
+                                .then(response => {
+                                    this.lastMember = response?.data?.data ?? [];
+                                })
+                                .catch(error => {
+                                    console.error('There was an error!', error);
+                                });
+                        }
                     }
-
-                    let start = moment(this.lastMember[findIndexPace]?.finish_time, 'HH:mm');
-                    let end = moment(this.activePace?.time, 'HH:mm');
-                    let diffMinutes = end.diff(start, 'minutes');
-
-                    console.log(start, end, diffMinutes);
-
-                    return this.observer[this.activeObserverKey - 1]?.name +
-                        ' Flag Time in ' +
-                        this.lastMember[findIndexPace]?.finish_time +
-                        ' (' + (diffMinutes > 0 ? '+' : '') + diffMinutes + ')';
-                }
+                },
             },
             methods: {
                 getData() {
                     this.preloader(true);
-                    axios.get(`/referee/${this.activeObserver}`, {
-                            params: {
-                                last_observer: this.observer[this.activeObserverKey == 0 ? 0 : this.activeObserverKey - 1]?.id ?? null
-                            }
-                        })
+                    axios.get(`/referee/${this.activeObserver}`)
                         .then(response => {
                             this.member = response.data.data.member;
                             this.memberHeadTail = response.data.data.groups;
 
-                            this.lastMember = response?.data?.data?.lastMember ?? [];
                             this.oldObserverKey = this.activeObserverKey;
 
                             this.activePaceKey = this.findNextValidIndex(this.member, -1, 'next')
@@ -131,13 +121,11 @@
                     axios.get(`/referee/${this.activeObserver}?check_update=1`, {
                             params: {
                                 check_update: 1,
-                                last_observer: this.observer[this.activeObserverKey == 0 ? 0 : this.activeObserverKey - 1]?.id ?? null
                             }
                         })
                         .then(response => {
                             this.member = response.data.data.member;
                             this.activePace = response.data.data.member[this.activePaceKey];
-                            this.lastMember = response?.data?.data?.lastMember ?? [];
                         })
                         .catch(error => {
                             console.error('There was an error!', error);
@@ -430,7 +418,7 @@
                     <div class="px-3 text-center bg-green-700 border-s border-white">
                         <div class="flex items-center">
                             <p class="font-bold text-white me-2" v-text="activePace?.name"></p>
-                            <p class="text-sm text-white" v-text="activePace?.par"></p>
+                            {{-- <p class="text-sm text-white" v-text="activePace?.par"></p> --}}
                         </div>
                         <div class="flex items-center">
                             <p class="text-white me-2 text-sm">Target Time</p>
@@ -442,7 +430,10 @@
 
             <section class="w-full flex items-center px-3.5 my-1">
                 <img class="h-auto w-2.5 me-2" src="{{ asset('img/flag.png') }}" alt="Play Button">
-                <p class="text-xs" v-text="lastObserver"></p>
+                <p class="max-[400px]:text-xs text-sm uppercase font-bold" v-if="lastMember.target">
+                    <span v-text="lastMember.number"></span> FLAG IN TIME <span v-text="lastMember.target"></span> <span :class="lastMember.class" v-text="lastMember.diff"></span>
+                </p>
+                <p class="max-[400px]:text-xs text-sm uppercase font-bold" v-else>NO DATA</p>
             </section>
 
             {{-- Fixed Button Section --}}
@@ -450,7 +441,7 @@
             <section class="w-full max-w-[500px] flex items-center justify-between p-1 px-3">
                 <div class="w-1/2 pe-1.5">
                     <div class="w-full rounded-xl shadow-lg pb-3 pt-1 text-center bg-white border border-green-700">
-                        <p class="text-center mb-1 text-lg text-green-700 font-bold" v-text="activeObserverType"></p>
+                        <p class="text-center mb-1 max-[400px]:text-base text-lg text-green-700 font-bold" v-text="activeObserverType"></p>
                         <p class="flex items-center justify-between px-2.5 text-green-700">
                             <span class="border border-gray-300 rounded bg-gray-100">
                                 <svg class="h-7 w-7 fill-current rtl:rotate-180 cursor-pointer" :class="{ 'text-gray-300': activeObserverKey == 0 }" v-on:click="changeActiveObserverArrow('prev')" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
@@ -458,7 +449,7 @@
                                 </svg>
                             </span>
                             <span class="text-balance">
-                                <span class="text-2xl font-bold" v-text="activeObserverNumber"></span>
+                                <span class="max-[400px]:text-xl text-2xl font-bold" v-text="activeObserverNumber"></span>
                             </span>
                             <span class="border border-gray-300 rounded bg-gray-100">
                                 <svg class="h-7 w-7 fill-current rtl:rotate-180 cursor-pointer" :class="{ 'text-gray-300': activeObserverKey == observer.length - 1 }" v-on:click="changeActiveObserverArrow('next')" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
@@ -479,7 +470,7 @@
 
                 <div class="w-1/2 ps-1.5">
                     <div class="w-full rounded-xl shadow-lg pb-3 pt-1 text-center bg-white border border-green-700">
-                        <p class="text-center mb-1 text-lg text-green-700 font-bold" v-text="activePace?.observer_type"></p>
+                        <p class="text-center mb-1 max-[400px]:text-base text-lg text-green-700 font-bold" v-text="activePace?.observer_type"></p>
                         <p class="flex items-center justify-between px-2.5 text-green-700">
                             <span class="border border-gray-300 rounded bg-gray-100">
                                 <svg class="h-7 w-7 fill-current rtl:rotate-180 cursor-pointer" :class="{ 'text-gray-300': activePaceKey == 0 }" v-on:click="changeActivePaceArrow('prev')" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
@@ -487,7 +478,7 @@
                                 </svg>
                             </span>
                             <span class="text-balance">
-                                <span class="text-2xl font-bold" v-text="activePace?.number"></span>
+                                <span class="max-[400px]:text-xl text-2xl font-bold" v-text="activePace?.number"></span>
                             </span>
                             <span class="border border-gray-300 rounded bg-gray-100">
                                 <svg class="h-7 w-7 fill-current rtl:rotate-180 cursor-pointer" :class="{ 'text-gray-300': activePaceKey == member.length - 1 }" v-on:click="changeActivePaceArrow('next')" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
@@ -507,8 +498,8 @@
                 </div>
             </section>
 
-            <section class="w-full flex items-center justify-center mb-4">
-                <h1 class="max-[350px]:text-[4.5rem] max-[400px]:text-[5rem] max-[500px]:text-[5.5rem] max-[640px]:text-[6rem] sm:text-8xl md:text-8xl font-bold" id="clock">
+            <section class="w-full flex items-center justify-center max-[400px]:mb-3 mb-6 max-[400px]:mt-0 mt-4">
+                <h1 class="max-[350px]:text-[4rem] max-[400px]:text-[4.5rem] max-[500px]:text-[5.5rem] max-[640px]:text-[6rem] sm:text-8xl md:text-8xl font-bold" id="clock">
                     <span class="hm me-1"></span>
                     <span class="text-5xl sec">27</span>
                 </h1>
@@ -530,7 +521,7 @@
                 </div>
             </section>
 
-            <button class="w-auto px-3 flex items-center mt-2 py-1 rounded-lg text-white bg-red-700 shadow-lg active:scale-95 hover:bg-red-600 transition cursor-pointer" v-on:click="handleUnmonitoredModal">
+            <button class="w-auto px-3 flex items-center max-[375px]:mt-6 max-[400px]:mt-8 mt-12 py-1 rounded-lg text-white bg-red-600 shadow active:scale-95 hover:bg-red-500 transition cursor-pointer" v-on:click="handleUnmonitoredModal">
                 <img class="h-auto w-4 me-2" src="{{ asset('img/icon/unmonitored-flag.svg') }}">
                 <p class="text-sm">UNMONITORED</p>
             </button>

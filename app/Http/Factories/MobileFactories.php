@@ -2,6 +2,7 @@
 
 namespace App\Http\Factories;
 
+use App\Models\TournamentPace;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
@@ -22,11 +23,8 @@ class MobileFactories
                 $finish = Carbon::createFromFormat('Y-m-d H:i:s', $item->finish_at, 'UTC')->setTimezone('Asia/Jakarta');
                 $allow = Carbon::parse($finish->copy()->format('Y-m-d') . ' ' . $item->time, 'Asia/Jakarta');
 
-
                 $time_diff_float = $allow->diffInMinutes($finish, false);
                 $time_diff = (int) ceil($time_diff_float);
-
-
 
                 if ($item->status == 'unmonitored') {
                     $progress = 'unmonitored';
@@ -84,5 +82,40 @@ class MobileFactories
                         });
                     });
             })->values();
+    }
+
+    public static function lastObserver(?TournamentPace $data): Array
+    {
+        $finish = null;
+        $class = null;
+        $diff = 0;
+
+        if ($data?->finish_at) {
+                $finish = Carbon::createFromFormat('Y-m-d H:i:s', $data->finish_at, 'UTC')->setTimezone('Asia/Jakarta');
+                $allow = Carbon::parse($finish->copy()->format('Y-m-d') . ' ' . $data->time, 'Asia/Jakarta');
+
+                $time_diff_float = $allow->diffInMinutes($finish, false);
+                $time_diff = (int) ceil($time_diff_float);
+
+                if ($data->status == 'unmonitored') {
+                    $class = 'text-red-700';
+                } elseif ($time_diff_float <= 0) {
+                    $class = 'text-green-600';
+                } elseif ($time_diff_float > 0 && $time_diff_float <= 3) {
+                    $class = 'text-yellow-400';
+                } elseif ($time_diff_float > 3) {
+                    $class = 'text-red-500';
+                }
+
+                $diff = '(' . ($time_diff > 0 ? '+' : '') . $time_diff . ')';
+                $finish = $finish->format('H:i');
+            }
+
+        return [
+            'target' => $finish,
+            'number' => $data?->number ? 'Hole ' . $data->number : null,
+            'class' => $class,
+            'diff' => $diff,
+        ];
     }
 }

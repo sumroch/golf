@@ -125,4 +125,23 @@ class MobileService
         })
             ->get();
     }
+
+    public function getLastObserver($id): ?object
+    {
+        $current = TournamentPace::select('tournament_paces.id', 'tournament_paces.tournament_round_id', 'tournament_paces.group_id', 'tournament_paces.hole_id', 'tournament_holes.number')
+            ->leftJoin('tournament_holes', 'tournament_paces.hole_id', '=', 'tournament_holes.id')
+            ->where('tournament_paces.id', $id)
+            ->first();
+
+        return TournamentPace::query()
+            ->select('tournament_paces.id', 'tournament_paces.finish_at', 'tournament_paces.hole_id', 'tournament_holes.number as number', 'tournament_holes.allowed_time')
+            ->leftJoin('tournament_holes', 'tournament_paces.hole_id', '=', 'tournament_holes.id')
+            ->where('tournament_paces.tournament_round_id', $current->tournament_round_id)
+            ->where('tournament_paces.group_id', $current->group_id)
+            ->whereHas('hole', function ($query) use ($current) {
+                $query->where('number', (int) $current->number - 1);
+            })
+            ->orderBy('tournament_paces.id', 'desc')
+            ->first();
+    }
 }

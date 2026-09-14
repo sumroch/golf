@@ -124,16 +124,16 @@
 @section('page-content')
     <div class="max-h-screen p-4 bg-base-200 h-full overflow-auto w-full" id="app">
         <div class="w-full flex flex-wrap justify-start items-start gap-4">
-            <div class="p-6 w-full bg-white rounded-2xl shadow-md flex items-stretch justify-between">
-                <div class="w-3/4 font-bold flex flex-col justify-between">
+            <div class="p-4 md:p-6 w-full bg-white rounded-2xl shadow-md flex items-stretch justify-between flex-wrap md:flex-nowrap">
+                <div class="w-full md:w-3/4 font-bold flex flex-col justify-between">
                     <h2 class="text-4xl font-bold mb-3" v-text="round.name"></h2>
-                    <div class="text-2xl leading-8">
+                    <div class="text-xl sm:text-2xl leading-8">
                         <p><span v-text="round.course"></span>-<span v-text="round.total_hole"></span> Holes</p>
                         <p><span v-text="round.date_start"></span></p>
                         <p><span v-text="round.ball"></span> | <span v-text="round.transportation"></span></p>
                     </div>
                 </div>
-                <div class="w-auto">
+                <div class="w-full md:w-auto md:mt-0 mt-4">
                     <select class="select mb-2 rounded-lg cursor-pointer" v-model="activeRound" @change="changeround()" v-if="round.status != 'active'">
                         <option v-for="roundItem in round.rounds" :value="roundItem.id" :selected="roundItem.id === round.id" v-text="roundItem.name"></option>
                     </select>
@@ -145,7 +145,7 @@
                         <span class="-mt-1 ms-2">Resume Tournament</span>
                     </button>
                     <div v-if="round.status === 'active'">
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-2 gap-2">
                             <button class="bg-white text-center inline-block rounded-lg px-6 py-3 border border-green-600 hover:bg-green-700 hover:text-white cursor-pointer group/edit" v-on:click="handleStartTimeModal()">
                                 <img class="w-6 h-6 inline-block" src="{{ asset('img/icon/clock.svg') }}" alt="">
                                 <p class="mt-1.5">Edit Start</p>
@@ -185,12 +185,14 @@
                         <h2 class="text-xl mb-2">Current Time</h2>
                         <h1 class="text-6xl font-bold tracking-widest" id="clock"><span class="hm"></span><span class="text-2xl sec">27</span></h1>
                     </div>
-                    <div class="w-1/3 relative p-4 bg-linear-to-t to-green-700 from-green-500 text-white rounded-2xl">
+                    <div class="w-full sm:w-1/3 relative p-4 bg-linear-to-t to-green-700 from-green-500 text-white rounded-2xl">
                         <button class="rounded-full bg-white w-8 h-8 flex items-center justify-center absolute top-2 right-2 shadow-md cursor-pointer" type="button" onclick="group_modal.show()">
                             <img class="w-3 h-3" src="{{ asset('img/icon/arrow-top-right.svg') }}" alt="">
                         </button>
-                        <p class="text-xl mb-2">Group Total</p>
-                        <p class="text-6xl font-bold" v-text="round.group_total"></p>
+                        <div class="text-center">
+                            <p class="text-xl mb-2">Group Total</p>
+                            <p class="text-6xl font-bold" v-text="round.group_total"></p>
+                        </div>
                     </div>
                     <div class="w-full bg-neutral-500 rounded-2xl shadow-md p-4 flex items-center justify-center h-full" v-if="round.status == 'pause'">
                         <h1 class="text-white text-6xl text-center">
@@ -275,22 +277,72 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="grid grid-cols-1 gap-3">
-                            <div class="w-full collapse collapse-arrow rounded-xl bg-base-100 border-base-300 border" v-for="(items, key) in holes" :key="key">
+
+                        <div class="grid grid-cols-1 gap-3" v-if="selectedHistory == 'hole'">
+                            <div class="w-full collapse collapse-arrow rounded-xl bg-base-100 border-gray-600 border" v-for="(items, key) in holes" :key="key">
                                 <input type="checkbox" />
-                                <div class="collapse-title py-2 text-lg rounded-none" :class="{ 'text-white bg-linear-to-t to-green-700 from-green-500': items[0]?.head == true, 'text-white bg-linear-to-t to-blue-700 from-blue-500': items[items.length - 1]?.tail == true }">
-                                    <span v-text="items[0].keys"></span>
-                                    <span class="ms-2" v-if="items[0].head == true">HEAD</span>
-                                    <span class="ms-2" v-if="items[items.length - 1].tail == true">TAIL</span>
+                                <div class="collapse-title py-2 text-lg rounded-none" :class="{'text-white bg-linear-to-t to-green-700 from-green-600': key == 9 || key == 0}">
+                                    <span v-text="items.keys"></span>
                                 </div>
                                 <div class="collapse-content bg-gray-100 pb-0 text-sm px-0 row-start-3 col-start-1">
-                                    <div class="w-full flex items-center justify-between border-b border-gray-300 py-2 px-4 font-bold" v-for="item in items" :key="item.id">
-                                        <p v-text="item.name"></p>
-                                        <p class="text-red-600" v-if="item.status == 'unmonitored'">UNMONITORED</p>
-                                        <p class="text-green-600" v-else-if="item.progress == 'ontime'" v-text="item.time_diff"></p>
-                                        <p class="text-yellow-600" v-else-if="item.progress == 'late'" v-text="item.time_diff"></p>
-                                        <p class="text-red-600" v-else v-text="item.time_diff"></p>
-                                    </div>
+                                    <table class="bg-white w-full border-collapse">
+                                        <thead>
+                                            <tr>
+                                                <th class="border-y border-gray-300 text-center p-1.5" width="50%">Hole</th>
+                                                <th class="border border-gray-300 text-center p-1.5" width="50%">F.Time</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="item in items.groups" :key="item.id">
+                                                <td class="border-t border-gray-300 text-center p-1.5" v-text="item.name"></td>
+                                                <td class="border border-b-0 border-gray-300 text-center p-1.5">
+                                                    <p class="text-red-600" v-if="item.status == 'unmonitored'">UNMONITORED</p>
+                                                    <p class="text-green-600" v-else-if="item.progress == 'ontime'" v-text="item.time_diff"></p>
+                                                    <p class="text-yellow-600" v-else-if="item.progress == 'late'" v-text="item.time_diff"></p>
+                                                    <p class="text-red-600" v-else v-text="item.time_diff"></p>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 gap-3" v-else-if="selectedHistory == 'group'">
+                            <div class="w-full collapse collapse-arrow rounded-xl bg-base-100 border-gray-300 border" :class="{ 'border-gray-600': !items.flag }" v-for="(items, key) in holes" :key="key">
+                                <input type="checkbox" />
+                                <div class="collapse-title py-2 text-lg rounded-none" :class="{ 'text-white bg-linear-to-t to-green-700 from-green-600': items.flag == 'head', 'text-white bg-linear-to-t to-blue-700 from-blue-500': items.flag == 'tail' }">
+                                    <span v-text="items.name"></span>
+                                    <span class="ms-2" v-if="items.flag == 'head'" v-text="'HEAD TEE ' + items.tee"></span>
+                                    <span class="ms-2" v-if="items.flag == 'tail'" v-text="'TAIL TEE ' + items.tee"></span>
+                                </div>
+                                <div class="collapse-content pb-0 text-sm px-0 row-start-3 col-start-1 border-collapse">
+                                    <table class="bg-white w-full border-collapse">
+                                        <thead>
+                                            <tr>
+                                                <th class="border-y border-gray-300 text-center p-1.5" width="34%">Hole</th>
+                                                <th class="border border-gray-300 text-center p-1.5" width="33%">F.Time</th>
+                                                <th class="border-y border-gray-300 text-center p-1.5" width="33%">Diff</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="item in items.paces" :key="item.id">
+                                                <td class="border-t border-gray-300 text-center p-1.5" v-text="item.name"></td>
+                                                <td class="border border-b-0 border-gray-300 text-center p-1.5">
+                                                    <p class="text-center text-red-600 text-xs" v-if="item.status == 'unmonitored'">UNMONITORED</p>
+                                                    <p class="text-center text-green-600" v-else-if="item.progress == 'ontime'" v-text="item.time_diff"></p>
+                                                    <p class="text-center text-yellow-600" v-else-if="item.progress == 'late'" v-text="item.time_diff"></p>
+                                                    <p class="text-center text-red-600" v-else v-text="item.time_diff"></p>
+                                                </td>
+                                                <td class="border-t border-gray-300 text-center p-1.5">
+                                                    <p class="text-center text-red-600 text-xs" v-if="item.status == 'unmonitored'">UNMONITORED</p>
+                                                    <p class="text-center text-green-600" v-else-if="item.last_progress == 'ontime'" v-text="item.last_diff"></p>
+                                                    <p class="text-center text-yellow-600" v-else-if="item.last_progress == 'late'" v-text="item.last_diff"></p>
+                                                    <p class="text-center text-red-600" v-else v-text="item.last_diff"></p>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
                         </div>

@@ -51,7 +51,7 @@ class PaceService
         ];
     }
 
-    public function getPacesByGroup($tournament_round_id, $session = 'morning', $order = 'hole'): ?object
+    public function getPacesByGroup(int $tournament_round_id, $session = 'all', $order = 'hole'): ?object
     {
         $groupFlag = Group::query()
             ->selectRaw('
@@ -60,13 +60,15 @@ class PaceService
                 MIN(id) as first_tee,
                 MAX(id) as last_tee
             ')
+            ->where('tournament_round_id', $tournament_round_id)
             ->groupBy('session', 'tee');
 
-        return Group::select('id', 'name', 'group_number', 'session', 'tee')
+        return Group::query()
             ->leftJoinSub($groupFlag, 'g', function ($join) {
-                $join->on('groups.id', '=', 'g.first_tee')
-                    ->on('groups.id', '=', 'g.last_tee');
+                $join->on('groups.session', '=', 'g.session')
+                    ->on('groups.tee', '=', 'g.tee');
             })
+            ->select('id', 'groups.name', 'groups.group_number', 'groups.session', 'groups.tee')
             ->selectRaw("
                 CASE
                     WHEN groups.id = g.first_tee THEN 'head'
@@ -74,32 +76,45 @@ class PaceService
                     ELSE NULL
                 END AS flag
             ")
-            ->with(['tournamentPaces as paces' => function ($query) use ($session, $order) {
+            ->with(['tournamentPaces' => function ($query) use ($session, $order) {
                 $query->select('tournament_paces.time', 'type', 'finish_at', 'status', 'group_id', 'tournament_holes.number as hole_number', 'tournament_holes.allowed_time')
                     ->join('tournament_holes', 'tournament_paces.hole_id', '=', 'tournament_holes.id')
                     ->whereIn('tournament_paces.status', ['unmonitored', 'finish'])
-                    ->when(in_array($session, ['morning', 'afternoon']), fn($q) => $q->where('session', $session))
+                    ->when(in_array($session, ['morning', 'afternoon']), fn($q) => $q->where('groups.session', $session))
                     ->when($order === 'hole', fn($q) => $q->orderBy('tournament_holes.number', 'asc'))
                     ->when($order === 'group', fn($q) => $q->orderBy('group_id', 'asc'));
             }])
             ->where('tournament_round_id', $tournament_round_id)
-            ->when(in_array($session, ['morning', 'afternoon']), fn($query) => $query->where('session', $session))
+            ->when(in_array($session, ['morning', 'afternoon']), fn($query) => $query->where('groups.session', $session))
             ->orderBy('group_number', 'asc')
             ->get();
     }
 
-    public function getPacesByHoles($tournament_round_id, $session = 'morning', $order = 'hole', $withGrouping = false): ?object
+    public function getPacesByHoles($tournament_round_id, $session = 'morning'): ?object
     {
-        return TournamentPace::select('tournament_paces.time', 'type', 'finish_at', 'status', 'group_id', 'groups.name as group_name', 'tournament_holes.number as hole_number', 'tournament_holes.allowed_time')
-            ->join('tournament_holes', 'tournament_paces.hole_id', '=', 'tournament_holes.id')
-            ->join('groups', 'tournament_paces.group_id', '=', 'groups.id')
-            ->where('tournament_paces.tournament_round_id', $tournament_round_id)
-            ->whereIn('tournament_paces.status', ['unmonitored', 'finish'])
-            ->when(in_array($session, ['morning', 'afternoon']), fn($query) => $query->where('groups.session', $session))
-            ->when($order === 'hole', fn($query) => $query->orderBy('tournament_holes.number', 'asc'))
-            ->when($order === 'group', fn($query) => $query->orderBy('group_id', 'asc'))
-            ->when($withGrouping, fn($query) => $query->addSelect('groups.session', 'groups.tee')->orderBy('groups.session', 'asc')->orderBy('groups.tee', 'asc')->orderBy('tournament_holes.id', 'asc'))
+        return TournamentHole::query()
+            ->select('id', 'tournament_holes.number as hole_number', 'tournament_holes.allowed_time')
+            ->where('tournament_round_id', $tournament_round_id)
+            ->with(['tournamentPaces' => function ($query) use ($session) {
+                $query->select('tournament_paces.id', 'tournament_paces.time', 'type', 'finish_at', 'status', 'group_id', 'hole_id', 'groups.name')
+                    ->join('groups', 'tournament_paces.group_id', '=', 'groups.id')
+                    ->whereIn('tournament_paces.status', ['unmonitored', 'finish'])
+                    ->when(in_array($session, ['morning', 'afternoon']), fn($q) => $q->where('groups.session', $session))
+                    ->orderBy('groups.id', 'asc');
+            }])
+            ->orderBy('number', 'asc')
             ->get();
+
+        // return TournamentPace::select('tournament_paces.time', 'type', 'finish_at', 'status', 'group_id', 'groups.name as group_name', 'tournament_holes.number as hole_number', 'tournament_holes.allowed_time')
+        //     ->join('tournament_holes', 'tournament_paces.hole_id', '=', 'tournament_holes.id')
+        //     ->join('groups', 'tournament_paces.group_id', '=', 'groups.id')
+        //     ->where('tournament_paces.tournament_round_id', $tournament_round_id)
+        //     ->whereIn('tournament_paces.status', ['unmonitored', 'finish'])
+        //     ->when(in_array($session, ['morning', 'afternoon']), fn($query) => $query->where('groups.session', $session))
+        //     ->when($order === 'hole', fn($query) => $query->orderBy('tournament_holes.number', 'asc'))
+        //     ->when($order === 'group', fn($query) => $query->orderBy('group_id', 'asc'))
+        //     ->when($withGrouping, fn($query) => $query->addSelect('groups.session', 'groups.tee')->orderBy('groups.session', 'asc')->orderBy('groups.tee', 'asc')->orderBy('tournament_holes.id', 'asc'))
+        //     ->get();
     }
 
     public function getPacesByTee($tournament_round_id, $tee = null): ?object

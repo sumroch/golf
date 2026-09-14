@@ -28,12 +28,14 @@ Route::middleware(['auth', 'lock_system'])->group(function () {
 
     Route::get('/referee', [MobileController::class, 'index'])->name('referee');
     Route::get('/referee/{observer}', [MobileController::class, 'showMember'])->name('referee.observer');
+    Route::get('/referee/last/{pace}', [MobileController::class, 'lastMember'])->name('referee.observer.last');
     Route::post('/referee/{id}/finish', [MobileController::class, 'finish'])->name('referee.finish');
     Route::post('/referee/{id}/unmonitored', [MobileController::class, 'unmonitored'])->name('referee.unmonitored');
     Route::post('/referee/{id}/edited', [MobileController::class, 'edited'])->name('referee.edited');
 
     Route::get('/access', [MobileAllAccessController::class, 'index'])->name('access');
     Route::get('/access/{observer}', [MobileAllAccessController::class, 'showMember'])->name('access.observer');
+    Route::get('/access/last/{pace}', [MobileAllAccessController::class, 'lastMember'])->name('access.observer.last');
     Route::post('/access/{id}/finish', [MobileAllAccessController::class, 'finish'])->name('access.finish');
     Route::post('/access/{id}/unmonitored', [MobileAllAccessController::class, 'unmonitored'])->name('access.unmonitored');
     Route::post('/access/{id}/edited', [MobileAllAccessController::class, 'edited'])->name('access.edited');

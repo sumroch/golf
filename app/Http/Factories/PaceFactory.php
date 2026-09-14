@@ -116,62 +116,116 @@ class PaceFactory
 
     public static function byHole($datas)
     {
-        $result = collect($datas)
+        return collect($datas)
             ->map(function ($data) {
-
-                $data->keys = 'Hole ' . $data->hole_number;
-                $data->name = $data->group_name;
-
-                return $data;
-            })
-            ->groupBy('hole_number')
-            ->map(function ($items) {
-
-                return $items->sortBy('group_id')
-                    ->values()
-                    ->map(function ($data) {
-                        return self::formatPaceByData($data);
-                    });
-            })
-            ->toArray();
-
-        return $result;
+                return [
+                    'keys' => 'Hole ' . $data->hole_number,
+                    'groups' => $data->tournamentPaces
+                        ->map(function ($data) {
+                            return self::formatPaceByData($data);
+                        })
+                        ->values()
+                ];
+            })->values();
     }
+    // public static function byHole($datas)
+    // {
+    //     $result = collect($datas)
+    //         ->map(function ($data) {
+
+    //             $data->keys = 'Hole ' . $data->hole_number;
+    //             $data->name = $data->group_name;
+
+    //             return $data;
+    //         })
+    //         ->groupBy('hole_number')
+    //         ->map(function ($items) {
+
+    //             return $items->sortBy('group_id')
+    //                 ->values()
+    //                 ->map(function ($data) {
+    //                     return self::formatPaceByData($data);
+    //                 });
+    //         })
+    //         ->toArray();
+
+    //     return $result;
+    // }
 
     public static function byGroup($datas)
     {
         return $datas
             ->map(function ($data) {
+                return [
+                    'id' => $data->id,
+                    'name' => $data->name,
+                    'flag' => $data->flag,
+                    'time' => Carbon::parse($data->time)->format('H:i'),
+                    'tee' => $data->tee,
+                    'session' => $data->session,
+                    'paces' => $data->tournamentPaces->map(function ($pace, $key) use ($data) {
 
-                $data->keys = $data->group_name;
-                $data->name = 'Hole ' . $data->hole_number;
+                        $pace->progress = null;
+                        $pace->last_progress = null;
+                        $pace->time_diff = '-';
+                        $pace->last_diff = '-';
 
-                return $data;
-            })
-            ->groupBy('session')
-            ->map(function ($itemss) {
-                return $itemss->groupBy('tee')
-                    ->values()
-                    ->flatMap(function ($itemss) {
-                        return $itemss->values()->map(function ($item, $index) use ($itemss) {
-                            $item->head = $index === 0;
-                            $item->tail = $index === $itemss->count() - 1;
+                        if ($pace->status == 'unmonitored') {
+                            $pace->last_diff = 'unmonitored';
+                        }
 
-                            return $item;
-                        });
-                    });
-            })
-            ->flatMap(function ($items) {
-                return $items;
-            })
-            ->groupBy('group_name')
-            ->map(function ($items) {
+                        if ($pace->finish_at) {
 
-                return $items->sortBy('hole_number')
-                    ->values()
-                    ->map(function ($data) {
-                        return self::formatPaceByData($data);
-                    });
+                            $finish = Carbon::createFromFormat('Y-m-d H:i:s', $pace->finish_at, 'UTC')->setTimezone('Asia/Jakarta');
+                            $last = $key > 0 ? $data->tournamentPaces->get($key - 1) : null;
+
+                            $allow = Carbon::parse($finish->copy()->format('Y-m-d') . ' ' . $pace->time, 'Asia/Jakarta');
+                            $pace->time_diff_float = $allow->diffInMinutes($finish, false);
+                            $pace->time_diff_int = (int) ceil($pace->time_diff_float);
+                            $pace->time_diff = ($pace->time_diff_int > 0 ? '+' : '') . $pace->time_diff_int;
+
+                            if ($pace->time_diff_float <= 0) {
+                                $pace->progress = 'ontime';
+                            } elseif ($pace->time_diff_float > 0 && $pace->time_diff_float <= 3) {
+                                $pace->progress = 'late';
+                            } elseif ($pace->time_diff_float > 3) {
+                                $pace->progress = 'overdue';
+                            }
+
+                            if ($last) {
+                                if ($last->status != 'unmonitored') {
+
+                                    $lastFinish = Carbon::createFromFormat('Y-m-d H:i:s', $last->finish_at, 'UTC')->setTimezone('Asia/Jakarta');
+                                    // $pace->last_diff_float = $finish->diffInMinutes($lastFinish, false);
+                                    // $pace->last_diff = (int) ceil($pace->last_diff_float);
+                                    // $pace->last_diff = '( ' . ($pace->last_diff > 0 ? '+' : '') . $pace->last_diff . ' mins )';
+                                    $pace->last_diff_float = $pace->time_diff_float - ($last->time_diff_float ?? 0);
+                                    $pace->last_diff = (int) ceil($pace->last_diff_float);
+
+                                    // if ($pace->last_diff_float <= 0) {
+                                    //     $pace->last_progress = 'ontime';
+                                    // } elseif ($pace->last_diff_float > 0 && $pace->last_diff_float <= 3) {
+                                    //     $pace->last_progress = 'late';
+                                    // } elseif ($pace->last_diff_float > 3) {
+                                    //     $pace->last_progress = 'overdue';
+                                    // }
+
+                                    if ($pace->last_diff_float == 0) {
+                                        $pace->last_progress = 'late';
+                                    } elseif ($pace->last_diff_float > 0) {
+                                        $pace->last_progress = 'ontime';
+                                    } elseif ($pace->last_diff_float < 0) {
+                                        $pace->last_progress = 'overdue';
+                                    }
+                                }
+                            }
+                        }
+
+                        $pace->name = 'Hole ' . $pace->hole_number;
+
+                        return $pace;
+                    })->values(),
+                ];
             })
             ->toArray();
     }
@@ -188,7 +242,7 @@ class PaceFactory
             $allow = Carbon::parse($finish->copy()->format('Y-m-d') . ' ' . $data->time, 'Asia/Jakarta');
             $data->time_diff_float = $allow->diffInMinutes($finish, false);
             $data->time_diff = (int) ceil($data->time_diff_float);
-            $data->time_diff = '( ' . ($data->time_diff > 0 ? '+' : '') . $data->time_diff . ' mins )';
+            $data->time_diff = ($data->time_diff > 0 ? '+' : '') . $data->time_diff;
 
             if ($data->time_diff_float <= 0) {
                 $data->progress = 'ontime';

@@ -17,21 +17,24 @@
 
 @section('page-content')
     <div class="w-full max-h-screen md:flex items-start justify-center relative p-4 bg-base-200 flex-wrap gap-4 overflow-auto">
-        <div class="p-6 w-full bg-white rounded-2xl shadow-md flex items-stretch justify-between no-print">
-            <div class="w-3/4 font-bold flex flex-col justify-between">
+
+        <div class="p-4 md:p-6 w-full bg-white rounded-2xl shadow-md flex items-stretch justify-between flex-wrap md:flex-nowrap">
+            <div class="w-full md:w-3/4 font-bold flex flex-col justify-between">
                 <h2 class="text-4xl font-bold mb-3">{{ $round['name'] }}</h2>
-                <div class="text-2xl leading-8">
+                <div class="text-xl sm:text-2xl leading-8">
                     <p>{{ $round['course'] }} - {{ $round['total_hole'] }} Holes</p>
                     <p>{{ $round['date_start'] }}</p>
                     <p>{{ $round['ball'] }} | {{ $round['transportation'] }}</p>
                 </div>
             </div>
-            <div class="w-auto">
-                <select class="select mb-2 rounded-lg cursor-pointer" onchange="window.location.href = '{{ url('admin/dashboard-table', '') }}/' + this.value">
+            <div class="w-full md:w-auto md:mt-0 mt-4">
+                @if ($round['status'] !== 'active')
+                <select class="select mb-2 rounded-lg cursor-pointer w-full" onchange="window.location.href = '{{ url('admin/dashboard-table', '') }}/' + this.value">
                     @foreach ($round['rounds'] as $roundItem)
                         <option value="{{ $roundItem['id'] }}" {{ $roundItem['id'] == $round['id'] ? 'selected' : '' }}>{{ $roundItem['name'] }}</option>
                     @endforeach
                 </select>
+                @endif
                 @if ($round['status'] === 'referee')
                     <button class="bg-green-600 rounded-lg px-6 py-10 flex items-center text-white font-bold hover:bg-green-700 cursor-pointer" onclick="pause_modal.show()">
                         <span class="-mt-1 ms-2">Start Tournament</span>
@@ -42,13 +45,19 @@
                         <span class="-mt-1 ms-2">Resume Tournament</span>
                     </button>
                 @elseif ($round['status'] === 'active')
-                    <button class="bg-white rounded-lg px-6 py-3 flex items-center border border-red-600 hover:bg-red-700 cursor-pointer" onclick="pause_modal.show()">
-                        <div class="flex items-center justify-center">
-                            <div class="h-5 bg-gray-500 w-2 rounded-sm me-1"></div>
-                            <div class="h-5 bg-gray-500 w-2 rounded-sm"></div>
-                        </div>
-                        <span class="ms-3">Pause Tournament</span>
-                    </button>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button class="bg-white text-center inline-block rounded-lg px-6 py-3 border border-green-600 hover:bg-green-700 hover:text-white cursor-pointer group/edit" onclick="edit_start_modal.show()">
+                            <img class="w-6 h-6 inline-block" src="{{ asset('img/icon/clock.svg') }}" alt="">
+                            <p class="mt-1.5">Edit Start</p>
+                        </button>
+                        <button class="bg-white text-center rounded-lg px-6 py-3 border border-red-600 hover:bg-red-700 hover:text-white cursor-pointer group/pause" onclick="pause_modal.show()">
+                            <div class="flex items-center justify-center">
+                                <div class="h-5 bg-gray-500 group-hover/pause:bg-white w-2 rounded-sm me-1"></div>
+                                <div class="h-5 bg-gray-500 group-hover/pause:bg-white w-2 rounded-sm"></div>
+                            </div>
+                            <p class="mt-1.5">Pause</p>
+                        </button>
+                    </div>
                     <button class="bg-red-600 rounded-lg px-4 py-6 flex items-center justify-center text-white font-bold hover:bg-red-700 cursor-pointer w-full mt-2" onclick="stop_modal.show()">
                         <span>Stop Tournament</span>
                     </button>
@@ -285,6 +294,63 @@
                     </form>
                 </div>
             </div>
+        </div>
+        <form class="modal-backdrop" method="dialog">
+            <button>close</button>
+        </form>
+    </dialog>
+
+    <dialog class="modal" id="edit_start_modal">
+        <div class="modal-box max-h-11/12">
+            <form method="dialog">
+                <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+            </form>
+            <form class="w-full pt-3" action="{{ route('round.reset', $round['id']) }}" method="GET">
+                <p class="text-lg">Edit Start Time</p>
+                <hr class="my-4 border-gray-300">
+                <p class="text-sm mb-2">Morning Session</p>
+                 {{ $round['morning_hour'] }}:{{ $round['morning_minute'] }}
+                 <br>
+                 {{ $round['afternoon_hour'] }}:{{ $round['afternoon_minute'] }}
+
+                <div class="flex items-center w-full">
+                    <select class="input flex-1 rounded shadow w-full placeholder:text-gray-400 select cursor-pointer" id="morning_hour" name="morning_hour" required>
+                        <option disabled value="">Pick Hour</option>
+                        @foreach (range(0, 23) as $item)
+                            <option value="{{ str_pad($item, 2, '0', STR_PAD_LEFT) }}" {{ (int) $round['morning_hour'] === $item ? 'selected' : '' }} >{{ str_pad($item, 2, '0', STR_PAD_LEFT) }}</option>
+                        @endforeach
+                    </select>
+                    <span class="px-3">:</span>
+                    <select class="input flex-1 rounded shadow w-full placeholder:text-gray-400 select cursor-pointer" id="morning_minute" name="morning_minute" required>
+                        <option disabled value="">Pick Minute</option>
+                        @foreach (range(0, 59) as $item)
+                            <option value="{{ str_pad($item, 2, '0', STR_PAD_LEFT) }}" {{ (int) $round['morning_minute'] === $item ? 'selected' : '' }} >{{ str_pad($item, 2, '0', STR_PAD_LEFT) }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <p class="text-sm mb-2 mt-4">Afternoon Session</p>
+                <div class="flex items-center w-full">
+                    <select class="input flex-1 rounded shadow w-full placeholder:text-gray-400 select cursor-pointer" id="afternoon_hour" name="afternoon_hour" required>
+                        <option disabled value="">Pick Hour</option>
+                        @foreach (range(0, 23) as $item)
+                            <option value="{{ str_pad($item, 2, '0', STR_PAD_LEFT) }}" {{ (int) $round['afternoon_hour'] === $item ? 'selected' : '' }} >{{ str_pad($item, 2, '0', STR_PAD_LEFT) }}</option>
+                        @endforeach
+                    </select>
+                    <span class="px-3">:</span>
+                    <select class="input flex-1 rounded shadow w-full placeholder:text-gray-400 select cursor-pointer" id="afternoon_minute" name="afternoon_minute" required>
+                        <option disabled value="">Pick Minute</option>
+                        @foreach (range(0, 59) as $item)
+                            <option value="{{ str_pad($item, 2, '0', STR_PAD_LEFT) }}" {{ (int) $round['afternoon_minute'] === $item ? 'selected' : '' }} >{{ str_pad($item, 2, '0', STR_PAD_LEFT) }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <hr class="my-6 border-gray-300">
+
+                <div class="w-full">
+                    <button class="w-full bg-green-700 text-white rounded-lg shadow-sm py-2 px-4 cursor-pointer" type="submit">Save Changes</button>
+                </div>
+            </form>
         </div>
         <form class="modal-backdrop" method="dialog">
             <button>close</button>

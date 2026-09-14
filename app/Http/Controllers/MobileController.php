@@ -166,11 +166,13 @@ class MobileController extends Controller
             $response['data']['groups'] = MobileFactories::groups($data, $duty->observer_type);
         }
 
-        if ($request->filled('last_observer')) {
-            $last = $mobileService->getUserDuties($request->input('last_observer'), $request->user());
-            $response['data']['lastMember'] = MobileFactories::showMember($mobileService->getObserverMember($last), $last->observer_type, $last->id);
-        }
-
         return response()->json($response);
+    }
+
+    public function lastMember($pace, MobileService $mobileService)
+    {
+        $lastObserver = MobileFactories::lastObserver($mobileService->getLastObserver($pace));
+
+        return response()->json(['data' => $lastObserver]);
     }
 }
